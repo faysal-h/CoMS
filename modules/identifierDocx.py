@@ -66,8 +66,8 @@ class Identifiers():
         else:
             return 'Page size not supported.'
 
-    def saveDoc(self):
-        self.document.save(os.path.join(caseworkFolder, f"Identifiers.docx"))
+    def saveDoc(self, pathToSaveFile):
+        self.document.save(os.path.join(pathToSaveFile, f"Identifiers.docx"))
         print(f"Document Identifier Saved in {caseworkFolder}.")
 
     def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, firDate, ps, district):
