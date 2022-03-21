@@ -55,6 +55,7 @@ class AccessFile():
             print("Reading Query Success. Data found against this case number.")
             return df
 
+
 class Tables():
     def __init__(self, ftmNo) -> None:
         self.ftmNo = ftmNo
@@ -63,6 +64,7 @@ class Tables():
     def getTable(self, queryToRead:str) -> pd.DataFrame:
         return self.database.readQuery(f"{queryToRead} {self.ftmNo}));")
         
+
 class CaseDetails(Tables):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
