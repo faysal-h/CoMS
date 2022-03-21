@@ -11,7 +11,7 @@ from docx.enum.table import WD_ALIGN_VERTICAL
 
 caseworkFolder = UserPaths().CurrentCaseWorkFolder
 
-class Identifiers():
+class IdentifiersDocument():
     def __init__(self) -> None:
         self.document = Document()
         self.createTwoColumnsPage()
@@ -93,7 +93,7 @@ class Identifiers():
         id.add_run('').font.size = Pt(11)
 
 if __name__ == '__main__':
-    i = Identifiers()
+    i = IdentifiersDocument()
     i.PageLayout('A4')
     i.add_styles()
     i.createTwoColumnsPage()
