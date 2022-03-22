@@ -1,9 +1,14 @@
 import os
+from datetime import datetime
 
 from docxtpl import DocxTemplate
-
-from ATDF import CaseDetailsDF as CaseDetails, CoCDF as COC, ParcelsDF as Parcels
+import pandas as pd
 from CusPath import UserPaths
+
+from AccessToDF import CaseDetailsDF as CaseDetails, CoCDF as COC, ParcelsDF as Parcels
+from AccessToDF import IdentifiersDF
+
+from identifierDocx import IdentifiersDocument
 
 firearmsTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\firearms.docx")
 cartridgeTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\firearms.docx")
@@ -77,6 +82,7 @@ class FirearmsProcessor(Sheets):
         else:
             print("No firearms sheet is generated as no data is passed to processor")
 
+
 class CartridgeProcessor(Sheets):
 
     def __init__(self, ftmNumber) -> None:
@@ -112,6 +118,7 @@ class CartridgeProcessor(Sheets):
         else:
             print("No cartridge sheet is generated as no data is passed to processor")
 
+
 class BulletProcessor(Sheets):
 
     def __init__(self, ftmNumber) -> None:
@@ -145,10 +152,46 @@ class BulletProcessor(Sheets):
                                             f"{self.caseNumberParts[2]}-{bullet[0]}-bullet.docx"))
         
         
+class IdentifiersProcessor():
+    def __init__(self, batchDate) -> None:
+        self.batchDate = batchDate
+
+        # Instanace of Identifiers Dataframe
+        self.IdentifiersDF = IdentifiersDF(self.batchDate)
+
+        # List of Identifiers from dataframe
+        self.identifiers = self.IdentifiersDF.combineCaseDetailsWithFIRDate()
+        
+        
+
+
+
+    def FileIdentifierMaker(self):
+        i = IdentifiersDocument()
+        i.PageLayout('A4')
+        i.add_styles()
+        i.createTwoColumnsPage()
+
+        for identifier in self.identifiers:
+            print(identifier)
+
+            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
+
+            # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
+            i.addFileIdentifiers(caseNo1=caseNoFull, caseNo2=str(identifier[5]), parcels=str(identifier[10]),
+                                fir=str(identifier[6]), firDate=identifier[11], ps=str(identifier[8]),
+                                district=str(identifier[9]))
+
+        i.saveDoc(UserPaths().CurrentCaseWorkFolder)
+
+
+
 
 if __name__ == "__main__":
     f = FirearmsProcessor(123456)
     print(f.firearms)
     print(f.firearmSheetMaker())
 
-    
+    i = IdentifiersProcessor("1/3/2022")
+    i.FileIdentifierMaker()
+   

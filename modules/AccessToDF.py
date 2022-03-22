@@ -15,16 +15,19 @@ queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], Cas
                         '''
 
 queryCaseDetailsForIdentifiers = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
-                                    CaseDetails.caseFTM, CaseDetails.Addressee, Items.District, Parcel.ParcelNo
-                                    FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] 
-                                    = Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
+                                    CaseDetails.caseFTM, CaseDetails.Addressee, CaseDetails.CaseNosAddl, 
+                                    Items.FIR, Items.FIRDate, Items.PS, Items.District, CaseDetails.NoOfParcels
+                                    FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] = 
+                                    Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                                     '''
+
 queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.SubmissionDate, Parcel.SubmitterName, 
                         Parcel.Rank, Items.FIR, Items.FIRDate, Items.EVCaliber, 
                         Items.EVType, Items.EV, Items.ItemNo, Items.Quantity
                         FROM Parcel INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                         WHERE (((Parcel.CaseNoFK)=
                         '''
+
 queryCOC = '''SELECT COC.[caseFTMFK], COC.[frmGRLDate], COC.[ProcessingDate], COC.[ComparisonStartDate], 
                 COC.[ComparisonCompDate], COC.[ReviewStartDate], COC.[ReviewEndDate], COC.[BalScanStartDate], 
                 COC.[BalScanCompDate], COC.[toCPRDate]
@@ -115,13 +118,29 @@ class IdentifiersDF(Tables):
         self.BatchDate = BatchDate
         self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiers)
 
+
+
     def getTableByBatchDate(self, queryToRead:str) -> pd.DataFrame:
         return self.database.readQuery(
             f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='last')
 
-    def getValuefrmParcels(self, columnName, indexNumber):
-        return self.caseDetailsDF.iloc[indexNumber][columnName]
+    def getFirDateByBatchDate(self) -> list:
+        x = self.identifiersDF['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y'))
+        # x = self.identifiersDF['FIRDate'].apply(lambda x: datetime.fromtimestamp(x).strftime('%d-%m-%Y'))
+        return x.values.tolist()
+    
 
+    # NOTE needed it to replace with pydate time
+    def combineCaseDetailsWithFIRDate(self):
+        caseDetails = self.identifiersDF.values.tolist()
+        firDate = self.getFirDateByBatchDate()
+        for i in range(len(caseDetails)):
+            caseDetails[i].append(firDate[i])
+        return caseDetails
+
+
+    def getValuefrmIdentifiers(self, columnName, indexNumber):
+        return self.caseDetailsDF.iloc[indexNumber][columnName]
 
 
 if __name__ == "__main__":
@@ -130,4 +149,8 @@ if __name__ == "__main__":
     print(d.caseDetailsDF)
 
     i = IdentifiersDF("01/03/2022")
-    print(i.identifiersDF)
+    x = i.identifiersDF.values.tolist()
+    f = i.getFirDateByBatchDate()
+    print(i.combineCaseDetailsWithFIRDate())
+
+

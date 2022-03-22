@@ -78,7 +78,7 @@ class IdentifiersDocument():
         id.add_run(f'{caseNo1}\n').font.size = Pt(12)
         id.add_run(f'Case No 2:\t{caseNo2}\n').font.size = Pt(11)
         id.add_run(f'Parcels:\t{parcels}\n').font.size = Pt(11)
-        id.add_run(f'FIR:\t\t{fir}({firDate})\n').font.size = Pt(11)
+        id.add_run(f'FIR:\t\t{fir} ({firDate})\n').font.size = Pt(11)
         id.add_run(f'PS & Distt:\t{ps}, {district}\n').font.size = Pt(11)
         id.add_run('').font.size = Pt(11)
 
@@ -93,12 +93,14 @@ class IdentifiersDocument():
         id.add_run('').font.size = Pt(11)
 
 if __name__ == '__main__':
-    i = IdentifiersDocument()
-    i.PageLayout('A4')
-    i.add_styles()
-    i.createTwoColumnsPage()
-    # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
-    i.addFileIdentifiers("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", parcels=6
-                        ,fir=6, firDate="02.02.2022", ps='abc', district='xyz')
-    i.addEnvelopsIdentifiers(caseNo1="PFSA2020-123456-FTM-123456", AddressTo="CPO", district="Pakpattan")
-    i.saveDoc()
+
+    pass
+    # i = IdentifiersDocument()
+    # i.PageLayout('A4')
+    # i.add_styles()
+    # i.createTwoColumnsPage()
+    # # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
+    # i.addFileIdentifiers("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", parcels=6
+    #                     ,fir=6, firDate="02.02.2022", ps='abc', district='xyz')
+    # i.addEnvelopsIdentifiers(caseNo1="PFSA2020-123456-FTM-123456", AddressTo="CPO", district="Pakpattan")
+    # i.saveDoc()
