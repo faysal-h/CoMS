@@ -14,11 +14,17 @@ queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], Cas
                         WHERE (((CaseDetails.[caseFTM])=
                         '''
 
-queryCaseDetailsForIdentifiers = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
+queryCaseDetailsForIdentifiersDate = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
                                     CaseDetails.caseFTM, CaseDetails.Addressee, CaseDetails.CaseNosAddl, 
                                     Items.FIR, Items.FIRDate, Items.PS, Items.District, CaseDetails.NoOfParcels
                                     FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] = 
                                     Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
+                                    '''
+queryCaseDetailsForIdentifiersFtm = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
+                                    CaseDetails.caseFTM, CaseDetails.Addressee, CaseDetails.CaseNosAddl, 
+                                    Items.FIR, Items.FIRDate, Items.PS, Items.District, CaseDetails.NoOfParcels
+                                    FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] = Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
+                                    WHERE (((CaseDetails.caseFTM)= 
                                     '''
 
 queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.SubmissionDate, Parcel.SubmitterName, 
@@ -113,10 +119,14 @@ class ParcelsDF(Tables):
 
 
 class IdentifiersDF(Tables):
-    def __init__(self, BatchDate, ftmNo="",) -> None:
+
+    def __init__(self, BatchDate="", ftmNo="") -> None:
         super().__init__(ftmNo)
         self.BatchDate = BatchDate
-        self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiers)
+        if not (self.BatchDate) == "":
+            self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiersDate)
+        else:
+            self.identifiersDF = self.getTableByFtmNo(queryCaseDetailsForIdentifiersFtm)
 
     def getTableByBatchDate(self, queryToRead:str) -> pd.DataFrame:
         # extracts a dataframe contain values for creating identifiers.
@@ -128,6 +138,15 @@ class IdentifiersDF(Tables):
 
         return x
 
+    def getTableByFtmNo(self, queryToRead:str) -> pd.DataFrame:
+        # extracts a dataframe contain values for creating identifiers.
+        x = self.database.readQuery(
+            f"{queryToRead} {self.ftmNo}));").drop_duplicates(subset=['caseFTM'], keep='last')
+
+        # converts FIR date to string format and replaces original column
+        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
+
+        return x
 
     def getValuefrmIdentifiers(self, columnName, indexNumber):
         return self.caseDetailsDF.iloc[indexNumber][columnName]
@@ -138,7 +157,7 @@ if __name__ == "__main__":
     d = CaseDetailsDF(123456)
     print(d.caseDetailsDF)
 
-    i = IdentifiersDF("01/03/2022")
+    i = IdentifiersDF(ftmNo=123456)
     print(i.identifiersDF.dtypes)
     x = i.identifiersDF.drop(labels=['Batch'], axis=1)
     print(x)

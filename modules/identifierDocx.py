@@ -66,8 +66,9 @@ class IdentifiersDocument():
         else:
             return 'Page size not supported.'
 
-    def saveDoc(self, pathToSaveFile):
-        self.document.save(os.path.join(pathToSaveFile, f"Identifiers.docx"))
+    def saveDoc(self,pathToSaveFile, IdentifiersORevnelops='Identifiers'):
+
+        self.document.save(os.path.join(pathToSaveFile, f"{IdentifiersORevnelops}.docx"))
         print(f"Document Identifier Saved in {caseworkFolder}.")
 
     def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, firDate, ps, district):
@@ -88,8 +89,8 @@ class IdentifiersDocument():
         id_format.space_after = Pt(0)
         id.add_run(f'\t{caseNo1}\n').font.size = Pt(10)
         id.add_run('To:\n').font.size = Pt(11)
-        id.add_run(f'\t{AddressTo}\n').font.size = Pt(13)
-        id.add_run(f'\t{district}\n').font.size = Pt(13)
+        id.add_run(f'\t{AddressTo},\n').font.size = Pt(13)
+        id.add_run(f'\t{district}.\n').font.size = Pt(13)
         id.add_run('').font.size = Pt(11)
 
 if __name__ == '__main__':

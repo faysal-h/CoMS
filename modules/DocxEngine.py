@@ -180,6 +180,22 @@ class IdentifiersProcessor():
 
         i.saveDoc(UserPaths().CurrentCaseWorkFolder)
 
+    def EnvelopsMaker(self):
+        i = IdentifiersDocument()
+        i.PageLayout('A4')
+        i.add_styles()
+        i.createTwoColumnsPage()
+
+        for envelop in self.Identifiers:
+            print(envelop)
+
+            caseNoFull = "PFSA" + str(envelop[1]) + "-" + str(envelop[2]) + "-FTM-" + str(envelop[3]) 
+
+            # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
+            i.addEnvelopsIdentifiers(caseNo1=caseNoFull, AddressTo=envelop[4],district=str(envelop[9]) )
+
+        i.saveDoc(UserPaths().CurrentCaseWorkFolder, "Envelops")
+
 
 
 
@@ -190,4 +206,5 @@ if __name__ == "__main__":
 
     i = IdentifiersProcessor("1/3/2022")
     i.FileIdentifierMaker()
+    i.EnvelopsMaker()
    
