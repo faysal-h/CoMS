@@ -1,1 +1,1 @@
-        # queryCaseDetails =
+            print(str(firearm[4])+"/"+str(self.caseNumberParts[0])+"/"+yearShort[2:])

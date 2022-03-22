@@ -1,7 +1,5 @@
 import os
 
-from access import CaseDetails
-
 class UserPaths():
 
     userHomePath = os.path.expanduser("~")

@@ -2,7 +2,7 @@ import os
 
 from docxtpl import DocxTemplate
 
-from access import CaseDetails, COC, Parcels
+from ATDF import CaseDetailsDF as CaseDetails, CoCDF as COC, ParcelsDF as Parcels
 from CusPath import UserPaths
 
 firearmsTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\firearms.docx")
@@ -73,7 +73,7 @@ class FirearmsProcessor(Sheets):
 
                             }
                 self.firearmsDocTemplate.render(context)
-                self.firearmsDocTemplate.save(os.path.join(UserPaths.userCaseWorkFolder(), f"{self.caseNumberParts[2]}-{firearm[0]}-firearms.docx"))
+                self.firearmsDocTemplate.save(os.path.join(UserPaths().checkNcreateUserCaseWorkFolder(), f"{self.caseNumberParts[2]}-{firearm[0]}-firearms.docx"))
         else:
             print("No firearms sheet is generated as no data is passed to processor")
 

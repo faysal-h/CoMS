@@ -13,6 +13,12 @@ queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], Cas
                         FROM CaseDetails
                         WHERE (((CaseDetails.[caseFTM])=
                         '''
+
+queryCaseDetailsForIdentifiers = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
+                                    CaseDetails.caseFTM, CaseDetails.Addressee, Items.District, Parcel.ParcelNo
+                                    FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] 
+                                    = Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
+                                    '''
 queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.SubmissionDate, Parcel.SubmitterName, 
                         Parcel.Rank, Items.FIR, Items.FIRDate, Items.EVCaliber, 
                         Items.EVType, Items.EV, Items.ItemNo, Items.Quantity
@@ -61,14 +67,14 @@ class Tables():
         self.ftmNo = ftmNo
         self.database = AccessFile()
 
-    def getTable(self, queryToRead:str) -> pd.DataFrame:
+    def getTableByFtmNo(self, queryToRead:str) -> pd.DataFrame:
         return self.database.readQuery(f"{queryToRead} {self.ftmNo}));")
         
 
-class CaseDetails(Tables):
+class CaseDetailsDF(Tables):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
-        self.caseDetailsDF = self.getTable(queryCaseDetails)
+        self.caseDetailsDF = self.getTableByFtmNo(queryCaseDetails)
 
     def getCaseNoParts(self) -> tuple:
         return self.caseDetailsDF.iloc[0]['caseYear'], self.caseDetailsDF.iloc[0]['casePFSA'], self.caseDetailsDF.iloc[0]['caseFTM'] 
@@ -77,19 +83,19 @@ class CaseDetails(Tables):
         return self.caseDetailsDF.iloc[indexNumber][columnName]
 
 
-class COC(Tables):
+class CoCDF(Tables):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
-        self.cocDF = self.getTable(queryCOC)
+        self.cocDF = self.getTableByFtmNo(queryCOC)
     
-    def getCOCdate(self, whichDate : str) -> datetime:
-        return self.cocDF.iloc[0][whichDate].to_pydatetime()
+    def getCOCdate(self, whichTypeOfDate : str) -> datetime:
+        return self.cocDF.iloc[0][whichTypeOfDate].to_pydatetime()
 
 
-class Parcels(Tables):
+class ParcelsDF(Tables):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
-        self.parcelsDF = self.getTable(queryParcelsDetails)
+        self.parcelsDF = self.getTableByFtmNo(queryParcelsDetails)
 
     # Filters and Slices dataframe
     def getFirearmsOrAmmoDF(self, typeOfItems:list) -> pd.DataFrame:
@@ -103,9 +109,25 @@ class Parcels(Tables):
         return self.caseDetailsDF.iloc[indexNumber][columnName]
 
 
+class IdentifiersDF(Tables):
+    def __init__(self, BatchDate, ftmNo="",) -> None:
+        super().__init__(ftmNo)
+        self.BatchDate = BatchDate
+        self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiers)
+
+    def getTableByBatchDate(self, queryToRead:str) -> pd.DataFrame:
+        return self.database.readQuery(
+            f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='last')
+
+    def getValuefrmParcels(self, columnName, indexNumber):
+        return self.caseDetailsDF.iloc[indexNumber][columnName]
+
 
 
 if __name__ == "__main__":
 
-    d = CaseDetails(123456)
+    d = CaseDetailsDF(123456)
     print(d.caseDetailsDF)
+
+    i = IdentifiersDF("01/03/2022")
+    print(i.identifiersDF)
