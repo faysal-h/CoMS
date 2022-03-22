@@ -156,15 +156,11 @@ class IdentifiersProcessor():
     def __init__(self, batchDate) -> None:
         self.batchDate = batchDate
 
-        # Instanace of Identifiers Dataframe
-        self.IdentifiersDF = IdentifiersDF(self.batchDate)
 
         # List of Identifiers from dataframe
-        self.identifiers = self.IdentifiersDF.combineCaseDetailsWithFIRDate()
+        self.Identifiers = IdentifiersDF(self.batchDate).identifiersDF.values.tolist()
         
         
-
-
 
     def FileIdentifierMaker(self):
         i = IdentifiersDocument()
@@ -172,14 +168,14 @@ class IdentifiersProcessor():
         i.add_styles()
         i.createTwoColumnsPage()
 
-        for identifier in self.identifiers:
+        for identifier in self.Identifiers:
             print(identifier)
 
             caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
 
             # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
             i.addFileIdentifiers(caseNo1=caseNoFull, caseNo2=str(identifier[5]), parcels=str(identifier[10]),
-                                fir=str(identifier[6]), firDate=identifier[11], ps=str(identifier[8]),
+                                fir=str(identifier[6]), firDate=identifier[7], ps=str(identifier[8]),
                                 district=str(identifier[9]))
 
         i.saveDoc(UserPaths().CurrentCaseWorkFolder)

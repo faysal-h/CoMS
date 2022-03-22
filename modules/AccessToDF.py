@@ -118,25 +118,15 @@ class IdentifiersDF(Tables):
         self.BatchDate = BatchDate
         self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiers)
 
-
-
     def getTableByBatchDate(self, queryToRead:str) -> pd.DataFrame:
-        return self.database.readQuery(
+        # extracts a dataframe contain values for creating identifiers.
+        x = self.database.readQuery(
             f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='last')
 
-    def getFirDateByBatchDate(self) -> list:
-        x = self.identifiersDF['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y'))
-        # x = self.identifiersDF['FIRDate'].apply(lambda x: datetime.fromtimestamp(x).strftime('%d-%m-%Y'))
-        return x.values.tolist()
-    
+        # converts FIR date to string format and replaces original column
+        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
 
-    # NOTE needed it to replace with pydate time
-    def combineCaseDetailsWithFIRDate(self):
-        caseDetails = self.identifiersDF.values.tolist()
-        firDate = self.getFirDateByBatchDate()
-        for i in range(len(caseDetails)):
-            caseDetails[i].append(firDate[i])
-        return caseDetails
+        return x
 
 
     def getValuefrmIdentifiers(self, columnName, indexNumber):
@@ -149,8 +139,10 @@ if __name__ == "__main__":
     print(d.caseDetailsDF)
 
     i = IdentifiersDF("01/03/2022")
-    x = i.identifiersDF.values.tolist()
-    f = i.getFirDateByBatchDate()
-    print(i.combineCaseDetailsWithFIRDate())
+    print(i.identifiersDF.dtypes)
+    x = i.identifiersDF.drop(labels=['Batch'], axis=1)
+    print(x)
+    # f = i.getFirDateByBatchDate()
+    # print(i.combineCaseDetailsWithFIRDate())
 
 
