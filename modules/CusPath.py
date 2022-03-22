@@ -20,6 +20,17 @@ class UserPaths():
             os.makedirs(os.path.join(self.userHomePath,"Desktop", "Casework"))
             return os.path.join(self.userHomePath,"Desktop", "Casework")
 
+    def fileWriteableStateCheck(self, filePath):
+        if(os.path.isfile(filePath)):
+            tempFile = filePath + ".temp"
+            try: 
+                os.rename(filePath, tempFile)
+                os.rename(tempFile, filePath)
+                print("file is writeable and closed")
+            except OSError:
+                print(f'{filePath} is still open. Close this file.')
+        else:
+            print("File does not exist.")
 
     @classmethod
     def checkNcreateUserCaseWorkFolder(cls) -> str :
@@ -34,3 +45,4 @@ class UserPaths():
 if __name__ == "__main__":
     path = UserPaths()
     print(path.CurrentCaseWorkFolder)
+    path.fileWriteableStateCheck("C:\\Users\\Faisal\\Desktop\\Casework\\123456-1-firearms.docx")
