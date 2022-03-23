@@ -1,15 +1,16 @@
 import os
-from datetime import datetime
+from datetime import date, datetime
 
 import pandas as pd
 import pyodbc
 
 dbPath = os.path.join(os.getcwd(), "CMSdatabase.accdb")
 
-
+ammo = ['bullet', 'metal piece', 'cartridge case']
 
 queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], CaseDetails.[caseFTM], CaseDetails.[CaseNosAddl],
-                        CaseDetails.[NoOfParcels], CaseDetails.[AnalystName], CaseDetails.[ReviewerName]
+                        CaseDetails.[NoOfParcels], CaseDetails.[AnalystName], CaseDetails.[ReviewerName], 
+                        CaseDetails.[Balscanner], CaseDetails.[TeamMember]
                         FROM CaseDetails
                         WHERE (((CaseDetails.[caseFTM])=
                         '''
@@ -20,6 +21,7 @@ queryCaseDetailsForIdentifiersDate = '''SELECT CaseDetails.Batch, CaseDetails.ca
                                     FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] = 
                                     Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                                     '''
+
 queryCaseDetailsForIdentifiersFtm = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
                                     CaseDetails.caseFTM, CaseDetails.Addressee, CaseDetails.CaseNosAddl, 
                                     Items.FIR, Items.FIRDate, Items.PS, Items.District, CaseDetails.NoOfParcels
@@ -88,18 +90,27 @@ class CaseDetailsDF(Tables):
     def getCaseNoParts(self) -> tuple:
         return self.caseDetailsDF.iloc[0]['caseYear'], self.caseDetailsDF.iloc[0]['casePFSA'], self.caseDetailsDF.iloc[0]['caseFTM'] 
 
-    def getValuefrmCaseDetails(self, columnName, indexNumber=0):
+    def getValuefrmCaseDetails(self, columnName, indexNumber=0) -> str:
         return self.caseDetailsDF.iloc[indexNumber][columnName]
-
+        
 
 class CoCDF(Tables):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
         self.cocDF = self.getTableByFtmNo(queryCOC)
     
-    def getCOCdate(self, whichTypeOfDate : str) -> datetime:
-        return self.cocDF.iloc[0][whichTypeOfDate].to_pydatetime()
+    def getCOCdate(self, whichTypeOfDate) -> datetime:
+        return self.cocDF.drop_duplicates(subset=['caseFTMFK'], 
+                                    keep='last').iloc[0][whichTypeOfDate].to_pydatetime()
 
+
+    def getCOCdateString(self, whichTypeOfDate : str) -> str:
+        dateToReturn = self.getCOCdate( whichTypeOfDate)
+        if(type(dateToReturn) == type(pd.NaT)):
+            return ""
+        else:
+            return dateToReturn.strftime("%d-%m-%Y")
+            
 
 class ParcelsDF(Tables):
     def __init__(self, ftmNo) -> None:
@@ -108,7 +119,7 @@ class ParcelsDF(Tables):
 
     # Filters and Slices dataframe
     def getFirearmsOrAmmoDF(self, typeOfItems:list) -> pd.DataFrame:
-        df1 = self.parcelsDF[self.parcelsDF['EVType'].isin(typeOfItems)]
+        df1 = self.parcelsDF[self.parcelsDF['EV'].isin(typeOfItems)]
         return df1[['ParcelNo', 'EVCaliber', 'EVType', 'EV', 'ItemNo', 'Quantity']]
 
     def getNoOfParcels(self) -> int:
@@ -116,6 +127,15 @@ class ParcelsDF(Tables):
 
     def getValuefrmParcels(self, columnName, indexNumber):
         return self.caseDetailsDF.iloc[indexNumber][columnName]
+
+    def getAmmoItemNos(self):
+        ammoItemsDF = self.parcelsDF[self.parcelsDF['EVType'].isin(['ammo'])]
+        ammoItemsList = ammoItemsDF['ItemNo']
+        return (', ').join(ammoItemsList)
+
+    def getAllItemNos(self):
+        items = self.parcelsDF['ItemNo'].values.tolist()
+        return (', ').join(items)
 
 
 class IdentifiersDF(Tables):
@@ -154,14 +174,22 @@ class IdentifiersDF(Tables):
 
 if __name__ == "__main__":
 
-    d = CaseDetailsDF(123456)
-    print(d.caseDetailsDF)
-
-    i = IdentifiersDF(ftmNo=123456)
-    print(i.identifiersDF.dtypes)
-    x = i.identifiersDF.drop(labels=['Batch'], axis=1)
-    print(x)
-    # f = i.getFirDateByBatchDate()
-    # print(i.combineCaseDetailsWithFIRDate())
+    # d = CaseDetailsDF(123456)
+    # print(d.getValuefrmCaseDetails('TeamMember'))
 
 
+    # i = IdentifiersDF(ftmNo=123456)
+    # print(i.identifiersDF.dtypes)
+    # x = i.identifiersDF.drop(labels=['Batch'], axis=1)
+    # print(x)
+    # # f = i.getFirDateByBatchDate()
+    # # print(i.combineCaseDetailsWithFIRDate())
+
+    i = ParcelsDF(123456)
+    print(i.parcelsDF.sort_values('ParcelNo'))
+
+    # c = CoCDF(123456)
+    # print(type(c.getCOCdate("BalScanStartDate")))
+    # print(type(c.getCOCdate("frmGRLDate")))
+    # print(c.getCOCdate("BalScanStartDate"))
+    # print(c.getCOCdate("frmGRLDate"))
