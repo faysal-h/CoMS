@@ -1,3 +1,4 @@
+
 import os
 
 import inflect
@@ -8,6 +9,7 @@ from AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
 from AccessToDF import IdentifiersDF
 
 from identifierDocx import IdentifiersDocument
+from reportDocx import Report
 
 processingTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\processing.docx")
 firearmsTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\firearms.docx")
@@ -83,6 +85,7 @@ class Sheets():
         self.AdditionalCaseNumbers = self.caseDetailsDF.getValuefrmCaseDetails(columnName="CaseNosAddl")
         self.analyst = self.caseDetailsDF.getValuefrmCaseDetails(columnName="AnalystName")
         self.reviewer = self.caseDetailsDF.getValuefrmCaseDetails(columnName="ReviewerName")
+        self.addressee = self.caseDetailsDF.getValuefrmCaseDetails(columnName="Addressee")
         self.processingDate = self.CoCDF.getCOCdate('ProcessingDate')
         self.BalscanDate = self.CoCDF.getCOCdateString("BalScanCompDate")
 
@@ -306,7 +309,6 @@ class ProcessingSheetProcessor(Sheets):
             return f"Parcel {str(ParcelNo)} : {Q} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
 
 
-
     # gets LIST of parcels in case and used it to combine in a single string.
     def getAndSetParcels(self):
         parcels = self.ParcelsDF.getParcelsDetailsForProcessingSheet()
@@ -453,29 +455,73 @@ class BulletProcessor(Sheets):
 class ReportProcessor(Sheets):
     def __init__(self, ftmNumber) -> None:
         super().__init__(ftmNumber)
-        pass
+
+
+        self.numberOfParcels = self.ParcelsDF.getNoOfParcels()
+        self.district = self.ParcelsDF.getValuefrmParcels('District', indexNumber=0)
+        self.testStatement = self.caseDetailsDF.getValuefrmCaseDetails(columnName="TestsRequest")
+
+        self.parcels = self.ParcelsDF.getParcelDetailsForReport()
+
+    def numberToWord(self, digit):
+        iE = inflect.engine()
+        
+
+        return iE.number_to_words(digit)
+
+
+
+    def reportGenerator(self):
+        
+
+        testReport = Report()
+        testReport.PageLayout('A4')
+        # testReport.add_styles()
+        testReport.paraTOD()
+        testReport.tableCaseDetails(caseNo1= self.fullCaseNumber, caseNo2=self.AdditionalCaseNumbers, 
+                                        addressee=self.addressee, district=self.district)
+        testReport.paraEvDetail(Addressee= self.addressee, items=self.numberOfParcels, testRequest=self.testStatement)
+        
+        # THis module converts digit To number
+
+        print(self.numberOfParcels, self.parcels)
+        testReport.tableEvDetails(self.parcels, self.numberOfParcels)
+        # testReport.tableAnalysisDetails()
+        # testReport.paraResults()
+        # testReport.paraNotes()
+        # testReport.paraDisposition()
+        # testReport.footer()
+        testReport.save()
+        os.system("start ./TestReport.docx")
+
+
 
 
 
 if __name__ == "__main__":
 
-    i = IdentifiersProcessor("1/3/2022")
-    i.FileIdentifierMaker(UserPaths().checkNcreateCaseWorkDirectory())
-    i.EnvelopsMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    r = ReportProcessor(123456)
+    r.reportGenerator()
+    
+
+
+    # i = IdentifiersProcessor("1/3/2022")
+    # i.FileIdentifierMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    # i.EnvelopsMaker(UserPaths().checkNcreateCaseWorkDirectory())
    
-    p = ProcessingSheetProcessor(123456)
-    print(p.proceesingSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
-    # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
+    # p = ProcessingSheetProcessor(123456)
+    # print(p.proceesingSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
+    # # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
-    f = FirearmsProcessor(123456)
-    print(f.firearms)
-    print(f.firearmSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
+    # f = FirearmsProcessor(123456)
+    # print(f.firearms)
+    # print(f.firearmSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
 
-    c = CartridgeProcessor(123456)
-    # print(c.cartridges)
-    c.cartridgeSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    # c = CartridgeProcessor(123456)
+    # # print(c.cartridges)
+    # c.cartridgeSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
 
-    b = BulletProcessor(123456)
-    b.bulletSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    # b = BulletProcessor(123456)
+    # b.bulletSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
 
-    print(UserPaths().checkNcreateCaseWorkDirectory())
+    # print(UserPaths().checkNcreateCaseWorkDirectory())

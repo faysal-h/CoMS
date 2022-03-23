@@ -1,5 +1,7 @@
 import os
 
+import inflect
+
 from docx import Document
 from docx.shared import Inches, Pt, Mm, Emu
 from docx.enum.style import WD_STYLE_TYPE
@@ -12,9 +14,9 @@ BulletCustomNormal , type= Paragraph, bullets enabled
 TableGridCustom ,   type = Table
 NOTE The page numbering field should also be enabled as page numbering is not supported at this moment.
 '''
-class Reports():
+class Report():
     def __init__(self):
-        self.document = Document('./Word/template.docx')
+        self.document = Document('./modules/templates/template.docx')
         
     #NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
     def add_styles(self):
@@ -112,7 +114,7 @@ class Reports():
         titleOfDocument_format.space_after = Pt(0)
 
     #CASE NUMBER TABLE
-    def tableCaseDetails(self):
+    def tableCaseDetails(self, caseNo1, caseNo2, addressee, district):
         
         tableCaseDetails = self.document.add_table(rows=1, cols=4)
         #TABLE STYLE
@@ -120,9 +122,9 @@ class Reports():
         tableCaseDetails.style = 'TableGridCustom'
         tableCaseDetails.allow_autofit =False
         #Length of table is 6309360
-        tableCaseDetails.rows[0].cells[0].width = Mm(30)
+        tableCaseDetails.rows[0].cells[0].width = Mm(32)
         tableCaseDetails.rows[0].cells[1].width = Mm(70)
-        tableCaseDetails.rows[0].cells[2].width = Mm(28)
+        tableCaseDetails.rows[0].cells[2].width = Mm(32)
         tableCaseDetails.rows[0].cells[3].width = Mm(52)
         # tableCaseDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
         # tableCaseDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
@@ -132,32 +134,47 @@ class Reports():
         #TABLE VALUES
         firstRowCells = tableCaseDetails.rows[0].cells
         firstRowCells[0].paragraphs[0].add_run('Agency Case#',style='TableHeading')
-        firstRowCells[1].paragraphs[0].add_run('PFSA20XX-XXXXXX-FTM-XXXXXX', style='SimpleText')
+        firstRowCells[1].paragraphs[0].add_run(f'{caseNo1}', style='SimpleText')
+        if(caseNo2 != None or caseNo2 != "" ):
+            firstRowCells[1].paragraphs[0].add_run(f'\n{caseNo2}', style='SimpleText')
         firstRowCells[2].paragraphs[0].add_run('Attention To:', style='TableHeading')
-        firstRowCells[3].paragraphs[0].add_run('SP Investigation, Cantt Division, Lahore.', style='SimpleText')
+        firstRowCells[3].paragraphs[0].add_run(f'{addressee}, {district}.', style='SimpleText')
 
-    def paraEvDetail(self):
+    def paraEvDetail(self, Addressee, items, testRequest):
+        if(items>1):
+            wasORwere = "were"
+        else:
+            wasORwere = "was"
+            
+        if(testRequest == None or testRequest == ''):
+            testRequest = "Comparison of Cartridge Cases and Shotshell Cases with Submitted Firearms and Functionality Testing"
+
         #NOTE EVIDENCE SUBMISSION PARAGRAPH
         evidenceDetailsParagraph = self.document.add_paragraph("", style='CompactParagraph')
         evidenceDetailsParagraph_format = evidenceDetailsParagraph.paragraph_format
         evidenceDetailsParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        evidenceDetailsHeading = evidenceDetailsParagraph.add_run("Description of Evidence Submitted\n", style='SimpleText')
+        evidenceDetailsHeading = evidenceDetailsParagraph.add_run("Description of Evidence Submitted:", style='SimpleText')
         evidenceDetailsHeading.bold = True
         evidenceDetailsHeading.underline = True
-        evidenceDetailsParagraph.add_run("The following evidence item was submitted on 02.01.2017 by Muhammad Sarwar (ASI) along with the request of DPO, Vehari for ", style='SimpleText')
-        evidenceDetailsParagraph.add_run(f"Comparison of Bullet and Functionality Testing.").bold =True
+        
+        EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
+        EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        EVdescriptionParagraph.add_run(f"""The following evidence {wasORwere} submitted along with the request of {Addressee} for """, style='SimpleText')
+        EVdescriptionParagraph.add_run(f"{testRequest}.").bold =True
+
 
     #CREATE TABLE OF EVIDENCE INFORMATION
-    def tableEvDetails(self):
-        
-        tableEVDetails = self.document.add_table(rows=1, cols=4)
+    def tableEvDetails(self, parcels, noOfParcels):
+
+        tableEVDetails = self.document.add_table(rows=1+len(parcels), cols=4)
         tableEVDetails.style = 'TableGridCustom'
-        tableEVDetails.allow_autofit =False
+        tableEVDetails.allow_autofit = False
+
         #NOTE length of table is 180mm
-        tableEVDetails.rows[0].cells[0].width = Mm(15)
-        tableEVDetails.rows[0].cells[1].width = Mm(50)
-        tableEVDetails.rows[0].cells[2].width = Mm(53)
-        tableEVDetails.rows[0].cells[3].width = Mm(62)
+        tableEVDetails.rows[0].cells[0].width = Mm(0)
+        tableEVDetails.rows[0].cells[1].width = Mm(55)
+        tableEVDetails.rows[0].cells[2].width = Mm(57)
+        tableEVDetails.rows[0].cells[3].width = Mm(77)
         tableEVDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
         tableEVDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
         tableEVDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
@@ -168,8 +185,32 @@ class Reports():
         firstRowCells[1].paragraphs[0].add_run('Submitter &\nSubmission Date', style='TableHeading')
         firstRowCells[2].paragraphs[0].add_run('FIR & PS', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run('Evidence Details\nItem No#', style='TableHeading')
+        
+        ie = inflect.engine()
+
+
+        d = 0
+        for i, parcel in enumerate(parcels, start=0):
+            print(i)
+            q = ie.number_to_words(parcel[10])
+            if(parcel[0]!=parcels[i-1][0]):
+                nextRowCells = tableEVDetails.rows[i+1+d].cells
+                nextRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
+                nextRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) &\n{parcel[1]}', style='SimpleText')
+                nextRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
+                nextRowCells[3].paragraphs[0].add_run(f'{q} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
+
+            else:
+                d = d-1            
+                nextRowCells = tableEVDetails.rows[i].cells
+                # nextRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
+                # nextRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) &\n{parcel[1]}', style='SimpleText')
+                # nextRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
+                nextRowCells[3].paragraphs[0].add_run(f' and {q} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
         #This is to seprate next table from this one
         self.document.add_paragraph('', style='CompactParagraph')
+
+
 
     #CREATE TABLE OF ANALYSIS INFORMATION
     def tableAnalysisDetails(self):
@@ -228,10 +269,10 @@ class Reports():
         paragraphFooter.text = "\tThis is footer"
 
     def save(self):
-        self.document.save("./Word/TestReport.docx")
+        self.document.save("./TestReport.docx")
 
 if __name__ == '__main__':
-    testReport = Reports()
+    testReport = Report()
     testReport.PageLayout('A4')
     # testReport.add_styles()
     testReport.paraTOD()
@@ -245,4 +286,4 @@ if __name__ == '__main__':
     testReport.footer()
     testReport.save()
 
-    os.system("start ./Word/TestReport.docx")
+    os.system("start ./TestReport.docx")

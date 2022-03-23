@@ -9,8 +9,8 @@ dbPath = os.path.join(os.getcwd(), "CMSdatabase.accdb")
 ammo = ['bullet', 'metal piece', 'cartridge case']
 
 queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], CaseDetails.[caseFTM], CaseDetails.[CaseNosAddl],
-                        CaseDetails.[NoOfParcels], CaseDetails.[AnalystName], CaseDetails.[ReviewerName], 
-                        CaseDetails.[Balscanner], CaseDetails.[TeamMember]
+                        CaseDetails.[NoOfParcels], CaseDetails.[AnalystName], CaseDetails.[ReviewerName], CaseDetails.[TestsRequest], 
+                        CaseDetails.[Balscanner], CaseDetails.[TeamMember], CaseDetails.[Addressee]
                         FROM CaseDetails
                         WHERE (((CaseDetails.[caseFTM])=
                         '''
@@ -31,7 +31,7 @@ queryCaseDetailsForIdentifiersFtm = '''SELECT CaseDetails.Batch, CaseDetails.cas
 
 queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.SubmissionDate, Parcel.SubmitterName, 
                         Parcel.Rank, Items.FIR, Items.FIRDate, Items.EVCaliber, 
-                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity, Items.Notes
+                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity, Items.Notes,Items.PS ,Items.District
                         FROM Parcel INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                         WHERE (((Parcel.CaseNoFK)=
                         '''
@@ -123,10 +123,10 @@ class ParcelsDF(Tables):
         return df1[['ParcelNo', 'EVCaliber', 'EVType', 'EV', 'ItemNo', 'Quantity']]
 
     def getNoOfParcels(self) -> int:
-        return len(self.parcelsDF.index)
+        return len(self.parcelsDF.drop_duplicates(['ParcelNo']).index)
 
     def getValuefrmParcels(self, columnName, indexNumber):
-        return self.caseDetailsDF.iloc[indexNumber][columnName]
+        return self.parcelsDF.iloc[indexNumber][columnName]
 
     def getAmmoItemNos(self):
         ammoItemsDF = self.parcelsDF[self.parcelsDF['EVType'].isin(['ammo'])]
@@ -137,10 +137,20 @@ class ParcelsDF(Tables):
         items = self.parcelsDF['ItemNo'].values.tolist()
         return (', ').join(items)
 
+    def getDistrict(self):
+        return self.parcelsDF.sort_values('SubmissionDate').drop_duplicates(subset=['CaseNoFK'], keep='last')
+
     # Manipulate dataframe for case Details in processing sheet
     def getParcelsDetailsForProcessingSheet(self):
         return self.parcelsDF.drop(['CaseNoFK', 'SubmissionDate', 'SubmitterName','Rank', 'FIR', 'FIRDate' ],
                                              axis=1).sort_values('ParcelNo').values.tolist()
+
+    def getParcelDetailsForReport(self):
+        parcelsForReport = self.parcelsDF.drop(['CaseNoFK'], axis=1).sort_values('ParcelNo')
+        print(parcelsForReport)
+        parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
+        parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
+        return parcelsForReport.values.tolist()
 
 class IdentifiersDF(Tables):
 
@@ -179,8 +189,12 @@ class IdentifiersDF(Tables):
 if __name__ == "__main__":
 
     # d = CaseDetailsDF(123456)
+    # print(d.caseDetailsDF)
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
+    p = ParcelsDF(123456)
+
+    print(p.getParcelDetailsForReport())
 
     # i = IdentifiersDF(ftmNo=123456)
     # print(i.identifiersDF.dtypes)
@@ -189,24 +203,7 @@ if __name__ == "__main__":
     # # f = i.getFirDateByBatchDate()
     # # print(i.combineCaseDetailsWithFIRDate())
 
-    import inflect
-    ie = inflect.engine()
 
-    i = ParcelsDF(123456)
-    x = i.getParcelsDetailsForProcessingSheet()
-    print(x)
-    
-    
-    parcelsDetailText = []
-    oldParcel = 0
-    
-    for element, item in enumerate(x, start=1):
-
-        quantityText = ie.number_to_words(item[5])
-        parcelsDetailText.append(f"""Parcel  + {str(item[0])} : {quantityText} {str(item[1])} 
-                                                caliber {item[3]} (Item {item[4]}) {item[6]}""")
-
-    print(parcelsDetailText[0])
     # c = CoCDF(123456)e
     # print(type(c.getCOCdate("BalScanStartDate")))
     # print(type(c.getCOCdate("frmGRLDate")))
