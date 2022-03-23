@@ -1,4 +1,3 @@
-from heapq import merge
 import os
 
 import inflect
@@ -451,7 +450,10 @@ class BulletProcessor(Sheets):
                                             f"4. bullet-{self.ftmNumber}.docx"))
         
         
-
+class ReportProcessor(Sheets):
+    def __init__(self, ftmNumber) -> None:
+        super().__init__(ftmNumber)
+        pass
 
 
 
