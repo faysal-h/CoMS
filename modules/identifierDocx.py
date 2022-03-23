@@ -68,7 +68,7 @@ class IdentifiersDocument():
 
     def saveDoc(self,pathToSaveFile, IdentifiersORevnelops='Identifiers'):
 
-        self.document.save(os.path.join(pathToSaveFile, f"{IdentifiersORevnelops}.docx"))
+        self.document.save(pathToSaveFile)
         print(f"Document Identifier Saved in {caseworkFolder}.")
 
     def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, firDate, ps, district):

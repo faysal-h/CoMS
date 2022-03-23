@@ -1,6 +1,7 @@
+from heapq import merge
 import os
-from datetime import datetime
 
+import inflect
 from docxtpl import DocxTemplate
 from CusPath import UserPaths
 
@@ -17,8 +18,8 @@ bulletTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\bullet.docx"
 DateFormat = "%d-%m-%Y"
 
 firearms = ['rifle', 'pistol', 'shotgun', 'machine pistol']
-cartridge = ['cartridge case']
-bullet = ['bullet', 'metal piece']
+cartridge = ['cartridge case', 'cartridge cases','cartridge', 'shotshell case', 'shotshell cases', 'shotshell']
+bullet = ['bullet', 'metal piece','bullets', 'metal pieces']
 
 
 class IdentifiersProcessor():
@@ -31,7 +32,7 @@ class IdentifiersProcessor():
         
         
 
-    def FileIdentifierMaker(self):
+    def FileIdentifierMaker(self, saveLocation):
         i = IdentifiersDocument()
         i.PageLayout('A4')
         i.add_styles()
@@ -47,9 +48,9 @@ class IdentifiersProcessor():
                                 fir=str(identifier[6]), firDate=identifier[7], ps=str(identifier[8]),
                                 district=str(identifier[9]))
 
-        i.saveDoc(UserPaths().CurrentCaseWorkFolder)
+        i.saveDoc(os.path.join(saveLocation, f"Identifiers.docx"))
 
-    def EnvelopsMaker(self):
+    def EnvelopsMaker(self, saveLocation):
         i = IdentifiersDocument()
         i.PageLayout('A4')
         i.add_styles()
@@ -63,7 +64,7 @@ class IdentifiersProcessor():
             # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
             i.addEnvelopsIdentifiers(caseNo1=caseNoFull, AddressTo=envelop[4],district=str(envelop[9]) )
 
-        i.saveDoc(UserPaths().CurrentCaseWorkFolder, "Envelops")
+        i.saveDoc(os.path.join(saveLocation, "Envelops.docx"))
 
 
 class Sheets():
@@ -84,7 +85,7 @@ class Sheets():
         self.analyst = self.caseDetailsDF.getValuefrmCaseDetails(columnName="AnalystName")
         self.reviewer = self.caseDetailsDF.getValuefrmCaseDetails(columnName="ReviewerName")
         self.processingDate = self.CoCDF.getCOCdate('ProcessingDate')
-        self.BalscanDate = self.CoCDF.getCOCdate("BalScanCompDate")
+        self.BalscanDate = self.CoCDF.getCOCdateString("BalScanCompDate")
 
 
     def fullCaseNumber(self) -> str:
@@ -122,10 +123,20 @@ class ProcessingSheetProcessor(Sheets):
             print('team with balscan')
             return 4
 
-    def setCoC(self):
+    def setCoCandEVdetails(self):
+        EvDetails = self.getAndSetParcels()
         x = self.findTypeOfCOC()
         if (x==1) :                                                # SINGLE WITHOUT BALSCAN
             return  {   
+                        'AGENCY_CASE' : self.fullCaseNumber,
+                        'AGENCY_CASE2' : self.AdditionalCaseNumbers,
+                        'ANALYST': self.analyst,
+                        'REVIEWER': self.reviewer,
+                        'PARCEL_DETAILS': EvDetails,
+                        'REVIEW_START': self.CoCDF.getCOCdateString('ReviewStartDate'),
+                        'REVIEW_END': self.CoCDF.getCOCdateString('ReviewEndDate'),
+                        'COMP_END': self.CoCDF.getCOCdateString('ComparisonCompDate'),
+                        
                         'I1': self.noOfParcels,                #PARCELS COLUMN
                         'I2': self.totalItemsNos,
                         'I3': "",
@@ -158,6 +169,15 @@ class ProcessingSheetProcessor(Sheets):
                     }
         elif(x==2):                                                # SINGLE WITH BALSCAN
             return  {   
+                        'AGENCY_CASE' : self.fullCaseNumber,
+                        'AGENCY_CASE2' : self.AdditionalCaseNumbers,
+                        'ANALYST': self.analyst,
+                        'REVIEWER': self.reviewer,
+                        'PARCEL_DETAILS': EvDetails,
+                        'REVIEW_START': self.CoCDF.getCOCdateString('ReviewStartDate'),
+                        'REVIEW_END': self.CoCDF.getCOCdateString('ReviewEndDate'),
+                        'COMP_END': self.CoCDF.getCOCdateString('ComparisonCompDate'),
+                        
                         'I1': self.noOfParcels,                #PARCELS COLUMN
                         'I2': self.ammoItems,
                         'I3': self.ammoItems,
@@ -190,6 +210,15 @@ class ProcessingSheetProcessor(Sheets):
                     }
         elif(x==3):                                     # TEAM WITH OUT BALSCAN
             return {   
+                        'AGENCY_CASE' : self.fullCaseNumber,
+                        'AGENCY_CASE2' : self.AdditionalCaseNumbers,
+                        'ANALYST': self.analyst,
+                        'REVIEWER': self.reviewer,
+                        'PARCEL_DETAILS': EvDetails,
+                        'REVIEW_START': self.CoCDF.getCOCdateString('ReviewStartDate'),
+                        'REVIEW_END': self.CoCDF.getCOCdateString('ReviewEndDate'),
+                        'COMP_END': self.CoCDF.getCOCdateString('ComparisonCompDate'),                        
+
                         'I1': self.noOfParcels,                #PARCELS COLUMN
                         'I2': self.ammoItems,
                         'I3': self.ammoItems,
@@ -222,6 +251,16 @@ class ProcessingSheetProcessor(Sheets):
                     }
         else:                                           # SINGLE WITH BALSCAN
             return  {   
+                        'AGENCY_CASE' : self.fullCaseNumber,
+                        'AGENCY_CASE2' : self.AdditionalCaseNumbers,
+                        'ANALYST': self.analyst,
+                        'REVIEWER': self.reviewer,
+                        'PARCEL_DETAILS': EvDetails,
+                        'REVIEW_START': self.CoCDF.getCOCdateString('ReviewStartDate'),
+                        'REVIEW_END': self.CoCDF.getCOCdateString('ReviewEndDate'),
+                        'COMP_END': self.CoCDF.getCOCdateString('ComparisonCompDate'),
+
+
                         'I1': self.noOfParcels,                #PARCELS COLUMN
                         'I2': self.ammoItems,
                         'I3': self.ammoItems,
@@ -253,12 +292,62 @@ class ProcessingSheetProcessor(Sheets):
                         'P6': "Case Done",
                     }
 
+    # Concatenate Items Details in a single String
+    def parcelDetailsStringMaker(self, ParcelNo, Quantity, EVCaliber, EVDetails, ItemsNo, notes):
+        if(notes == None or notes == "None"):
+            notes = ""
+        
+        # converts digit to text
+        inflectEngine = inflect.engine()
+        Q = inflectEngine.number_to_words(Quantity)
+
+        if(ParcelNo == "and"):
+            return f"and {Q} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
+        else:
+            return f"Parcel {str(ParcelNo)} : {Q} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
+
+
+
+    # gets LIST of parcels in case and used it to combine in a single string.
     def getAndSetParcels(self):
-        parcels = self.ParcelsDF.g
+        parcels = self.ParcelsDF.getParcelsDetailsForProcessingSheet()
+        print(parcels)
+        caseDetailsList = []
+
+        if(len(parcels) == 0):
+            print("No parcels Submitted")
+            return ""
+
+        else:
+            pass
+
+
+        for index, item in enumerate(parcels):
+            # for parcel add PARCEL 1 to start
+            if(index == 0):
+                caseDetailsList.append(self.parcelDetailsStringMaker(ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1]
+                                                , EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+            else:
+                # gets the parcel No of previous parcel
+                oldParcelNo = parcels[index-1][0]
+
+                if(item[0] != oldParcelNo):
+                    caseDetailsList.append(self.parcelDetailsStringMaker(ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1]
+                                                    , EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                else:
+                    caseDetailsList.append(self.parcelDetailsStringMaker(ParcelNo="and", Quantity=item[5], EVCaliber=item[1]
+                                                    , EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                
+        return (", ").join(caseDetailsList)
 
     def proceesingSheetMaker(self, saveLocation):
-        contextCOC = self.setCoC()
-        self.processingDocTemplate.render(contextCOC)
+        context = self.setCoCandEVdetails()
+
+        
+
+        # context = contextCOC.update(contextMain)
+        # print(contextMain)
+        self.processingDocTemplate.render(context)
         self.processingDocTemplate.save(os.path.join(saveLocation, f'1. Processing Sheet-{self.ftmNumber}.docx'))
 
 
@@ -274,7 +363,7 @@ class FirearmsProcessor(Sheets):
 
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
-    def firearmSheetMaker(self):
+    def firearmSheetMaker(self, saveLocation):
         if len(self.firearms) > 0: 
             for firearm in self.firearms:
                 yearShort = str(self.caseNumberParts[0])
@@ -289,13 +378,14 @@ class FirearmsProcessor(Sheets):
                                 'CALIBER' : firearm[1],
                                 'FTMNO' : self.caseNumberParts[2],
                                 'MARKING': str(firearm[4])+"/"+str(self.caseNumberParts[1])+"/"+yearShort[2:],
-                                'ABIS': self.BalscanDate.strftime(DateFormat),
+                                'ABIS': self.BalscanDate,
+
 
                             }
 
                 self.firearmsDocTemplate.render(context)
-                self.firearmsDocTemplate.save(os.path.join(UserPaths().checkNcreateUserCaseWorkFolder(),
-                                                 f"{self.caseNumberParts[2]}-{firearm[0]}-firearms.docx"))
+                self.firearmsDocTemplate.save(os.path.join(saveLocation,
+                                                 f"2. firearms-{self.ftmNumber}-{firearm[0]}.docx"))
         else:
             print("No firearms sheet is generated as no data is passed to processor")
 
@@ -306,34 +396,27 @@ class CartridgeProcessor(Sheets):
         super().__init__(ftmNumber)
             
         # List of firearms 
-        self.cartridges = self.Parcels.getFirearmsOrAmmoDF(cartridge).sort_values('ParcelNo').values.tolist()
+        self.cartridges = self.ParcelsDF.getFirearmsOrAmmoDF(cartridge).sort_values('ParcelNo').values.tolist()
         # Create instance of DOCX TEMPLATE
-        self.firearmsDocTemplate = DocxTemplate(cartridgeTemplatePath)
+        self.cartridgeTemplate = DocxTemplate(cartridgeTemplatePath)
 
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
-    def cartridgeSheetMaker(self):
-        if len(self.cartridges) > 0:
-            for cartridge in self.cartridges:
-                # yearShort = str(self.caseNumberParts[0])
-
-                context =   {   
-                                'AGENCY_CASE' : self.fullCaseNumber,
-                                'AGENCY_CASE2' : self.AdditionalCaseNumbers,
-                                'ITEM': cartridge[4],
-                                'EXAMINER': self.analyst,
-                                'REVIEWER': self.reviewer,
-                                'DATE' : self.processingDate.strftime(DateFormat),
-                                # 'CALIBER' : cartridge[1],
-                                # 'FTMNO' : self.caseNumberParts[2],
-                                # 'MARKING': str(cartridge[4])+"/"+str(self.caseNumberParts[1])+"/"+yearShort[2:],
-                                # 'ABIS': self.BalscanDate.strftime(DateFormat),
-                            }
-                self.firearmsDocTemplate.render(context)
-                self.firearmsDocTemplate.save(os.path.join(UserPaths.userCaseWorkFolder(),
-                                                f"{self.caseNumberParts[2]}-{cartridge[0]}-cartridge.docx"))
-        else:
-            print("No cartridge sheet is generated as no data is passed to processor")
+    def cartridgeSheetMaker(self, saveLocation):
+        context =   {   
+                        'AGENCY_CASE' : self.fullCaseNumber,
+                        'AGENCY_CASE2' : self.AdditionalCaseNumbers,
+                        'EXAMINER': self.analyst,
+                        'REVIEWER': self.reviewer,
+                        'DATE' : self.processingDate.strftime(DateFormat),
+                        # 'CALIBER' : cartridge[1],
+                        # 'FTMNO' : self.caseNumberParts[2],
+                        # 'MARKING': str(cartridge[4])+"/"+str(self.caseNumberParts[1])+"/"+yearShort[2:],
+                        # 'ABIS': self.BalscanDate.strftime(DateFormat),
+                    }
+        self.cartridgeTemplate.render(context)
+        self.cartridgeTemplate.save(os.path.join(saveLocation,
+                                        f"3. cartridge{self.ftmNumber}.docx"))
 
 
 class BulletProcessor(Sheets):
@@ -342,20 +425,19 @@ class BulletProcessor(Sheets):
         super().__init__(ftmNumber)
             
         # List of firearms 
-        self.bullets = self.Parcels.getFirearmsOrAmmoDF(bullet).sort_values('ParcelNo').values.tolist()
+        self.bullets = self.ParcelsDF.getFirearmsOrAmmoDF(bullet).sort_values('ParcelNo').values.tolist()
         # Create instance of DOCX TEMPLATE
-        self.firearmsDocTemplate = DocxTemplate(cartridgeTemplatePath)
+        self.bulletDocTemplate = DocxTemplate(bulletTemplatePath)
 
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
-    def bulletSheetMaker(self):
-        for bullet in self.bullets:
-            # yearShort = str(self.caseNumberParts[0])
+    def bulletSheetMaker(self, saveLocation):
+        # for bullet in self.bullets:
+        #     # yearShort = str(self.caseNumberParts[0])
 
             context =   {   
                             'AGENCY_CASE' : self.fullCaseNumber,
                             'AGENCY_CASE2' : self.AdditionalCaseNumbers,
-                            'ITEM': bullet[4],
                             'EXAMINER': self.analyst,
                             'REVIEWER': self.reviewer,
                             'DATE' : self.processingDate.strftime(DateFormat),
@@ -364,9 +446,9 @@ class BulletProcessor(Sheets):
                             # 'MARKING': str(cartridge[4])+"/"+str(self.caseNumberParts[1])+"/"+yearShort[2:],
                             # 'ABIS': self.BalscanDate.strftime(DateFormat),
                         }
-            self.firearmsDocTemplate.render(context)
-            self.firearmsDocTemplate.save(os.path.join(UserPaths.userCaseWorkFolder(),
-                                            f"{self.caseNumberParts[2]}-{bullet[0]}-bullet.docx"))
+            self.bulletDocTemplate.render(context)
+            self.bulletDocTemplate.save(os.path.join(saveLocation,
+                                            f"4. bullet-{self.ftmNumber}.docx"))
         
         
 
@@ -374,14 +456,24 @@ class BulletProcessor(Sheets):
 
 
 if __name__ == "__main__":
-    # f = FirearmsProcessor(123456)
-    # print(f.firearms)
-    # print(f.firearmSheetMaker())
 
-    # i = IdentifiersProcessor("1/3/2022")
-    # i.FileIdentifierMaker()
-    # i.EnvelopsMaker()
+    i = IdentifiersProcessor("1/3/2022")
+    i.FileIdentifierMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    i.EnvelopsMaker(UserPaths().checkNcreateCaseWorkDirectory())
    
     p = ProcessingSheetProcessor(123456)
-    print(p.setCoC())
-    p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
+    print(p.proceesingSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
+    # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
+
+    f = FirearmsProcessor(123456)
+    print(f.firearms)
+    print(f.firearmSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
+
+    c = CartridgeProcessor(123456)
+    # print(c.cartridges)
+    c.cartridgeSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
+
+    b = BulletProcessor(123456)
+    b.bulletSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
+
+    print(UserPaths().checkNcreateCaseWorkDirectory())

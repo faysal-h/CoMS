@@ -31,7 +31,7 @@ queryCaseDetailsForIdentifiersFtm = '''SELECT CaseDetails.Batch, CaseDetails.cas
 
 queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.SubmissionDate, Parcel.SubmitterName, 
                         Parcel.Rank, Items.FIR, Items.FIRDate, Items.EVCaliber, 
-                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity
+                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity, Items.Notes
                         FROM Parcel INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                         WHERE (((Parcel.CaseNoFK)=
                         '''
@@ -137,6 +137,10 @@ class ParcelsDF(Tables):
         items = self.parcelsDF['ItemNo'].values.tolist()
         return (', ').join(items)
 
+    # Manipulate dataframe for case Details in processing sheet
+    def getParcelsDetailsForProcessingSheet(self):
+        return self.parcelsDF.drop(['CaseNoFK', 'SubmissionDate', 'SubmitterName','Rank', 'FIR', 'FIRDate' ],
+                                             axis=1).sort_values('ParcelNo').values.tolist()
 
 class IdentifiersDF(Tables):
 
@@ -185,10 +189,25 @@ if __name__ == "__main__":
     # # f = i.getFirDateByBatchDate()
     # # print(i.combineCaseDetailsWithFIRDate())
 
-    i = ParcelsDF(123456)
-    print(i.parcelsDF.sort_values('ParcelNo'))
+    import inflect
+    ie = inflect.engine()
 
-    # c = CoCDF(123456)
+    i = ParcelsDF(123456)
+    x = i.getParcelsDetailsForProcessingSheet()
+    print(x)
+    
+    
+    parcelsDetailText = []
+    oldParcel = 0
+    
+    for element, item in enumerate(x, start=1):
+
+        quantityText = ie.number_to_words(item[5])
+        parcelsDetailText.append(f"""Parcel  + {str(item[0])} : {quantityText} {str(item[1])} 
+                                                caliber {item[3]} (Item {item[4]}) {item[6]}""")
+
+    print(parcelsDetailText[0])
+    # c = CoCDF(123456)e
     # print(type(c.getCOCdate("BalScanStartDate")))
     # print(type(c.getCOCdate("frmGRLDate")))
     # print(c.getCOCdate("BalScanStartDate"))
