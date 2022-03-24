@@ -86,8 +86,9 @@ class Sheets():
         self.analyst = self.caseDetailsDF.getValuefrmCaseDetails(columnName="AnalystName")
         self.reviewer = self.caseDetailsDF.getValuefrmCaseDetails(columnName="ReviewerName")
         self.addressee = self.caseDetailsDF.getValuefrmCaseDetails(columnName="Addressee")
-        self.processingDate = self.CoCDF.getCOCdate('ProcessingDate')
+        self.processingDate = self.CoCDF.getCOCdateString('ProcessingDate')
         self.BalscanDate = self.CoCDF.getCOCdateString("BalScanCompDate")
+        self.toCPRdate = self.CoCDF.getCOCdateString('toCPRDate')
 
 
     def fullCaseNumber(self) -> str:
@@ -464,17 +465,20 @@ class ReportProcessor(Sheets):
 
         testReport = Report()
         testReport.PageLayout('A4')
+
         # testReport.add_styles()
         testReport.paraTOD()
+
         testReport.tableCaseDetails(caseNo1= self.fullCaseNumber, caseNo2=self.AdditionalCaseNumbers, 
                                         addressee=self.addressee, district=self.district)
+
         testReport.paraEvDetail(Addressee= self.addressee, items=self.numberOfParcels, testRequest=self.testStatement)
         
-        # THis module converts digit To number
-
         testReport.tableEvDetails(self.parcels)
-        testReport.tableAnalysisDetails()
-        # testReport.paraResults()
+
+        testReport.tableAnalysisDetails(startDate=self.processingDate, endDate=self.toCPRdate)
+
+        testReport.paraResults()
         testReport.paraNotes()
         testReport.paraDisposition()
         # testReport.footer()

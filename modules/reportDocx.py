@@ -209,18 +209,6 @@ class Report():
             cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
         
 
-        # table.cell(0, 0).vertical_alignment = WD_ALIGN_VERTICAL.BOTTOM
-
-        #NOTE length of table is 180mm
-        # tableEVDetails.rows[0].cells[0].width = Mm(15)
-        # tableEVDetails.rows[0].cells[1].width = Mm(55)
-        # tableEVDetails.rows[0].cells[2].width = Mm(57)
-        # tableEVDetails.rows[0].cells[3].width = Mm(77)
-        # tableEVDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        # tableEVDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        # tableEVDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        # tableEVDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-
         firstRowCells = tableEVDetails.rows[0].cells
         firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
         firstRowCells[1].paragraphs[0].add_run('Submitter &\nSubmission Date', style='TableHeading')
@@ -262,8 +250,12 @@ class Report():
 
         # Column 2 WIDTH
         for cell in tableEVDetails.columns[1].cells:
-            cell.width = Mm(25)
+            cell.width = Mm(30)
         
+        # Column 4 WIDTH
+        for cell in tableEVDetails.columns[2].cells:
+            cell.width = Mm(40)
+
         # Column 4 WIDTH
         for cell in tableEVDetails.columns[3].cells:
             cell.width = Mm(90)
@@ -273,7 +265,7 @@ class Report():
         self.document.add_paragraph('', style='CompactParagraph')
 
     #CREATE TABLE OF ANALYSIS INFORMATION
-    def tableAnalysisDetails(self):
+    def tableAnalysisDetails(self, startDate : str, endDate : str):
         tableAnalysis = self.document.add_table(rows=2, cols=3)
         tableAnalysis.style = 'TableGridCustom'
         tableAnalysis.allow_autofit = False
@@ -290,6 +282,18 @@ class Report():
         firstRowCells[1].paragraphs[0].add_run('Analysis Completion Date', style='TableHeading')
         firstRowCells[2].paragraphs[0].add_run('Examination Method/ Tests Performed', style='TableHeading')
 
+        secondRowCells = tableAnalysis.rows[1].cells
+        secondRowCells[0].paragraphs[0].add_run(f'{startDate}')
+        secondRowCells[1].paragraphs[0].add_run(f'{endDate}')
+        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Microscopy and ABIS Scanning')
+
+        # adjust column 1 length
+        for cell in tableAnalysis.columns[0].cells:
+            cell.width = Mm(38)
+
+        # adjust column 2 length
+        for cell in tableAnalysis.columns[1].cells:
+            cell.width = Mm(48)
 
     #CREATE CONCLUSION, Have to remove space after paragraph
     def paraResults(self):
