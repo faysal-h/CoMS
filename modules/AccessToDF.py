@@ -4,9 +4,12 @@ from datetime import date, datetime
 import pandas as pd
 import pyodbc
 
+
 dbPath = os.path.join(os.getcwd(), "CMSdatabase.accdb")
 
 ammo = ['bullet', 'metal piece', 'cartridge case']
+
+customDateFormat = "%d-%m-%Y"
 
 queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], CaseDetails.[caseFTM], CaseDetails.[CaseNosAddl],
                         CaseDetails.[NoOfParcels], CaseDetails.[AnalystName], CaseDetails.[ReviewerName], CaseDetails.[TestsRequest], 
@@ -73,7 +76,11 @@ class AccessFile():
             return df
 
 
+
+
 class Tables():
+    '''This class and its child classess read queries and manipulate data in the form of 
+        PANDAS DATAFRAMES'''
     def __init__(self, ftmNo) -> None:
         self.ftmNo = ftmNo
         self.database = AccessFile()
@@ -83,6 +90,8 @@ class Tables():
         
 
 class CaseDetailsDF(Tables):
+    '''class for manipulating DATAFRMAE of  Case Details Table in ACCESS DATABASE'''
+
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
         self.caseDetailsDF = self.getTableByFtmNo(queryCaseDetails)
@@ -109,7 +118,7 @@ class CoCDF(Tables):
         if(type(dateToReturn) == type(pd.NaT)):
             return ""
         else:
-            return dateToReturn.strftime("%d-%m-%Y")
+            return dateToReturn.strftime(customDateFormat)
             
 
 class ParcelsDF(Tables):
@@ -148,8 +157,8 @@ class ParcelsDF(Tables):
     def getParcelDetailsForReport(self):
         parcelsForReport = self.parcelsDF.drop(['CaseNoFK'], axis=1).sort_values('ParcelNo')
         print(parcelsForReport)
-        parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
-        parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
+        parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
+        parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
         return parcelsForReport.values.tolist()
 
 class IdentifiersDF(Tables):
@@ -168,7 +177,7 @@ class IdentifiersDF(Tables):
             f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='last')
 
         # converts FIR date to string format and replaces original column
-        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
+        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
 
         return x
 
@@ -178,7 +187,7 @@ class IdentifiersDF(Tables):
             f"{queryToRead} {self.ftmNo}));").drop_duplicates(subset=['caseFTM'], keep='last')
 
         # converts FIR date to string format and replaces original column
-        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime('%d-%m-%Y')).values.tolist()
+        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
 
         return x
 

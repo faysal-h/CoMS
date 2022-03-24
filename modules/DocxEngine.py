@@ -308,20 +308,11 @@ class ProcessingSheetProcessor(Sheets):
         else:
             return f"Parcel {str(ParcelNo)} : {Q} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
 
-
     # gets LIST of parcels in case and used it to combine in a single string.
     def getAndSetParcels(self):
         parcels = self.ParcelsDF.getParcelsDetailsForProcessingSheet()
-        print(parcels)
+
         caseDetailsList = []
-
-        if(len(parcels) == 0):
-            print("No parcels Submitted")
-            return ""
-
-        else:
-            pass
-
 
         for index, item in enumerate(parcels):
             # for parcel add PARCEL 1 to start
@@ -338,16 +329,13 @@ class ProcessingSheetProcessor(Sheets):
                 else:
                     caseDetailsList.append(self.parcelDetailsStringMaker(ParcelNo="and", Quantity=item[5], EVCaliber=item[1]
                                                     , EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
-                
+        # this method also joins parcel string and returns a single string of case details for 
+        # processing sheet        
         return (", ").join(caseDetailsList)
 
+    # Poplulate and Generate Processing Sheet
     def proceesingSheetMaker(self, saveLocation):
         context = self.setCoCandEVdetails()
-
-        
-
-        # context = contextCOC.update(contextMain)
-        # print(contextMain)
         self.processingDocTemplate.render(context)
         self.processingDocTemplate.save(os.path.join(saveLocation, f'1. Processing Sheet-{self.ftmNumber}.docx'))
 
