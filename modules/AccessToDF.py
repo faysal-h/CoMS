@@ -9,7 +9,7 @@ dbPath = os.path.join(os.getcwd(), "CMSdatabase.accdb")
 
 ammo = ['bullet', 'metal piece', 'cartridge case']
 
-customDateFormat = "%d-%m-%Y"
+customDateFormat = "%d.%m.%Y"
 
 queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], CaseDetails.[caseFTM], CaseDetails.[CaseNosAddl],
                         CaseDetails.[NoOfParcels], CaseDetails.[AnalystName], CaseDetails.[ReviewerName], CaseDetails.[TestsRequest], 
