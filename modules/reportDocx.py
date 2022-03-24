@@ -9,11 +9,15 @@ from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
 
-note = '''The results in this report relate only to the item(s) as received and tested. Each received item is marked with case number, item number and duly signed. '''
+note = ("The results in this report relate only to the item(s) as"
+        " received and tested. Each received item is marked with case number,"
+        " item number and duly signed.")
 
-footer = f'''Analyzed by: _________________ Date:___________Reviewed by: __________________ Date:___________   
-                             FTM-10-FS 				                                    FTM-38-FS 
-'''
+disposition = ( "The case property / evidence may be received by the responsible"
+                " official of your office on submitting authorization letter/docket"
+                " within 15 days after the receipt of this report. "
+                "Ammunition components should be maintained for possible future examinations."
+                )
 
 '''
 NOTE There should be a template docx in the folder with the following custom sytles
@@ -111,9 +115,23 @@ class Report():
         else:
             return 'Page size not supported.'
     
+    def delete_paragraph(self, paragraph):
+        p = paragraph._element
+        p.getparent().remove(p)
+        p._p = p._element = None
+
+    def cleanBlanLines(self):
+        # code snippet
+        for paragraph in self.document.paragraphs:
+            if paragraph.text == "\n":
+                self.delete_paragraph(paragraph)
+
+        # self.document._body.clear_content()
+
     #CREATE HEADING OF THE REPORT
     def paraTOD(self):
-        titleOfDocument = self.document.add_paragraph(f"Firearms & Toolmarks Examination Report", style="Bold")
+        titleOfDocument = self.document.add_paragraph("", style="Bold")
+        titleOfDocument.add_run("Firearms & Toolmarks Examination Report").font.size = Pt(12)
         titleOfDocument_format = titleOfDocument.paragraph_format
         titleOfDocument_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
         titleOfDocument_format.space_before = Pt(0)
@@ -148,9 +166,9 @@ class Report():
 
     def paraEvDetail(self, Addressee, items, testRequest):
         if(items>1):
-            wasORwere = "were"
+            wasORwere = "items were"
         else:
-            wasORwere = "was"
+            wasORwere = "item was"
             
         if(testRequest == None or testRequest == ''):
             testRequest = "Comparison of Cartridge Cases and Shotshell Cases with Submitted Firearms and Functionality Testing"
@@ -169,9 +187,9 @@ class Report():
         EVdescriptionParagraph.add_run(f"{testRequest}.\n").bold =True
 
     #CREATE TABLE OF EVIDENCE INFORMATION
-    def tableEvDetails(self, parcels, noOfParcels):
+    def tableEvDetails(self, parcels):
 
-        tableEVDetails = self.document.add_table(rows=1+len(parcels), cols=4)
+        tableEVDetails = self.document.add_table(rows=1, cols=4)
         tableEVDetails.style = 'TableGridCustom'
         tableEVDetails.allow_autofit = False
 
@@ -190,6 +208,7 @@ class Report():
             cell.width = Mm(90)
             cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
         
+
         # table.cell(0, 0).vertical_alignment = WD_ALIGN_VERTICAL.BOTTOM
 
         #NOTE length of table is 180mm
@@ -197,10 +216,10 @@ class Report():
         # tableEVDetails.rows[0].cells[1].width = Mm(55)
         # tableEVDetails.rows[0].cells[2].width = Mm(57)
         # tableEVDetails.rows[0].cells[3].width = Mm(77)
-        tableEVDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableEVDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableEVDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableEVDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableEVDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableEVDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableEVDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableEVDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
         firstRowCells = tableEVDetails.rows[0].cells
         firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
@@ -208,28 +227,48 @@ class Report():
         firstRowCells[2].paragraphs[0].add_run('FIR & PS', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run('Evidence Details\nItem No#', style='TableHeading')
         
-        ie = inflect.engine()
-
-        # This variable moves used to add item to previous  
-        d = 0
-        
         for i, parcel in enumerate(parcels, start=0):
             print(i)
-            q = ie.number_to_words(parcel[10])
+
+            # converts quantity of items from digits to words
+            quantityInWords = inflect.engine().number_to_words(parcel[10])
+
+
+            #  NOTE parcels[i-1][0] Previous Parcel Number.
+            #  As -1 points to last item of list, so this also works for first Parcel of list
             if(parcel[0]!=parcels[i-1][0]):
-                nextRowCells = tableEVDetails.rows[i+1+d].cells
-                nextRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
-                nextRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
-                nextRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
-                nextRowCells[3].paragraphs[0].add_run(f'{q} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
+
+                # Adds new row to the table if PARCEL IS NEW
+                newRowCells = tableEVDetails.add_row().cells
+                for cell in newRowCells:
+                    cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+
+
+                # newRowCells = tableEVDetails.rows[i+1+d].cells
+                newRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
+                newRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
+                newRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
+                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
 
             else:
-                d = d-1            
-                nextRowCells = tableEVDetails.rows[i].cells
-                # nextRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
-                # nextRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) &\n{parcel[1]}', style='SimpleText')
-                # nextRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
-                nextRowCells[3].paragraphs[0].add_run(f' and {q} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
+                # move to last row of table
+                previousRowCells = tableEVDetails.rows[-1].cells
+
+                previousRowCells[3].paragraphs[0].add_run(f' and {quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
+
+        # Column 1 PARCEL NO WIDTH
+        for cell in tableEVDetails.columns[0].cells:
+            cell.width = Mm(10)
+
+        # Column 2 WIDTH
+        for cell in tableEVDetails.columns[1].cells:
+            cell.width = Mm(25)
+        
+        # Column 4 WIDTH
+        for cell in tableEVDetails.columns[3].cells:
+            cell.width = Mm(90)
+
+
         #This is to seprate next table from this one
         self.document.add_paragraph('', style='CompactParagraph')
 
@@ -251,12 +290,13 @@ class Report():
         firstRowCells[1].paragraphs[0].add_run('Analysis Completion Date', style='TableHeading')
         firstRowCells[2].paragraphs[0].add_run('Examination Method/ Tests Performed', style='TableHeading')
 
+
     #CREATE CONCLUSION, Have to remove space after paragraph
     def paraResults(self):
         resultsHeading = self.document.add_paragraph("", style="BoldUnderline")
         resultsHeading_format = resultsHeading.paragraph_format
         resultsHeading_format.space_after = Pt(0)
-        resultsHeading.add_run('Details of Results and Conclusions Based on Test(s) Performed:').font.size = Pt(12)
+        resultsHeading.add_run('Details of Results and Conclusions Based on Test(s) Performed:').font.size = Pt(11)
 
         listResults = ['This is the first result.', 'This is the second result.', 'This is the third result.']
         for i in listResults:
@@ -266,7 +306,7 @@ class Report():
     #CREATE NOTE(S)
     def paraNotes(self):
         notesHeading = self.document.add_paragraph("", style="BoldItalic")
-        run1 = notesHeading.add_run(f'Note(s): {note}').font.size = Pt(11)
+        notesHeading.add_run(f'Note(s): {note}').font.size = Pt(11)
 
         # listNotes = ['This is the first note.', 'This is the second note.']
         # for i in listNotes:
@@ -276,7 +316,7 @@ class Report():
     def paraDisposition(self):
         dispositionHeading = self.document.add_paragraph("", style="BoldUnderline")
         dispositionHeading.add_run('Disposition of Heading:').font.size = Pt(11)
-        dispositionParagraph = self.document.add_paragraph('The case property/ evidence may be received by the responsible official of your office on submitting authorization letter/docket within 15 days after the receipt of this report.  Ammunition components should be maintained for possible future examinations.', style='CompactParagraph')
+        dispositionParagraph = self.document.add_paragraph(f'{disposition}', style='CompactParagraph')
         dispositionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         EORParagraph = self.document.add_paragraph('', style='Bold')
         EORParagraph.add_run('X...End of Report...X').font.size = Pt(12)
@@ -288,7 +328,7 @@ class Report():
         sectionMain = sections[0]
         footers = sectionMain.footer
         paragraphFooter = footers.paragraphs[0]
-        paragraphFooter.text = f"{footer}"
+        paragraphFooter.text = ""
         for run in paragraphFooter.runs:
             run.font.size = Pt(10)
 

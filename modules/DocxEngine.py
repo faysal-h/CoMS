@@ -94,6 +94,12 @@ class Sheets():
         x = self.caseDetailsDF.getCaseNoParts()
         return "PFSA"+ str(x[0]) + "-" + str(x[1]) + "-FTM-" + str(x[2])
 
+    def numberToWord(self, digit):
+        iE = inflect.engine()
+        
+
+        return iE.number_to_words(digit)
+
 #This classs manipulate data from DataFrames and varivale of COC, Case Details, Parcels
 class ProcessingSheetProcessor(Sheets):
     def __init__(self, ftmNumber) -> None:
@@ -299,14 +305,14 @@ class ProcessingSheetProcessor(Sheets):
         if(notes == None or notes == "None"):
             notes = ""
         
-        # converts digit to text
-        inflectEngine = inflect.engine()
-        Q = inflectEngine.number_to_words(Quantity)
+        # # converts digit to text
+        # inflectEngine = inflect.engine()
+        # Q = inflectEngine.number_to_words(Quantity)
 
         if(ParcelNo == "and"):
             return f"and {Q} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
         else:
-            return f"Parcel {str(ParcelNo)} : {Q} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
+            return f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
 
     # gets LIST of parcels in case and used it to combine in a single string.
     def getAndSetParcels(self):
@@ -451,12 +457,6 @@ class ReportProcessor(Sheets):
 
         self.parcels = self.ParcelsDF.getParcelDetailsForReport()
 
-    def numberToWord(self, digit):
-        iE = inflect.engine()
-        
-
-        return iE.number_to_words(digit)
-
 
 
     def reportGenerator(self):
@@ -472,8 +472,7 @@ class ReportProcessor(Sheets):
         
         # THis module converts digit To number
 
-        print(self.numberOfParcels, self.parcels)
-        testReport.tableEvDetails(self.parcels, self.numberOfParcels)
+        testReport.tableEvDetails(self.parcels)
         testReport.tableAnalysisDetails()
         # testReport.paraResults()
         testReport.paraNotes()
