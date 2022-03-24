@@ -225,6 +225,10 @@ class Report():
             #  NOTE parcels[i-1][0] Previous Parcel Number.
             #  As -1 points to last item of list, so this also works for first Parcel of list
             if(parcel[0]!=parcels[i-1][0]):
+                
+                accused = ""
+                if(parcel[14] not in [None, '']):
+                    accused = f"\n(said to be recovered from the accused {parcel[14]})"
 
                 # Adds new row to the table if PARCEL IS NEW
                 newRowCells = tableEVDetails.add_row().cells
@@ -236,7 +240,8 @@ class Report():
                 newRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
                 newRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
                 newRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
-                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
+                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})'
+                            + accused, style='SimpleText')
 
             else:
                 # move to last row of table

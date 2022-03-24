@@ -34,7 +34,8 @@ queryCaseDetailsForIdentifiersFtm = '''SELECT CaseDetails.Batch, CaseDetails.cas
 
 queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.SubmissionDate, Parcel.SubmitterName, 
                         Parcel.Rank, Items.FIR, Items.FIRDate, Items.EVCaliber, 
-                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity, Items.Notes,Items.PS ,Items.District
+                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity, Items.Notes, Items.PS, 
+                        Items.District, Items.Accused
                         FROM Parcel INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                         WHERE (((Parcel.CaseNoFK)=
                         '''
