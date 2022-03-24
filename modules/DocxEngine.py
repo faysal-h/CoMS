@@ -16,7 +16,7 @@ firearmsTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\firearms.d
 cartridgeTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\cartridge.docx")
 bulletTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\bullet.docx")
 
-DateFormat = "%d-%m-%Y"
+DateFormat = "%d.%m.%Y"
 
 firearms = ['rifle', 'pistol', 'shotgun', 'machine pistol']
 cartridge = ['cartridge case', 'cartridge cases','cartridge', 'shotshell case', 'shotshell cases', 'shotshell']
@@ -464,7 +464,7 @@ class ReportProcessor(Sheets):
 
         testReport = Report()
         testReport.PageLayout('A4')
-        testReport.add_styles()
+        # testReport.add_styles()
         testReport.paraTOD()
         testReport.tableCaseDetails(caseNo1= self.fullCaseNumber, caseNo2=self.AdditionalCaseNumbers, 
                                         addressee=self.addressee, district=self.district)
@@ -474,10 +474,10 @@ class ReportProcessor(Sheets):
 
         print(self.numberOfParcels, self.parcels)
         testReport.tableEvDetails(self.parcels, self.numberOfParcels)
-        # testReport.tableAnalysisDetails()
+        testReport.tableAnalysisDetails()
         # testReport.paraResults()
-        # testReport.paraNotes()
-        # testReport.paraDisposition()
+        testReport.paraNotes()
+        testReport.paraDisposition()
         # testReport.footer()
         testReport.save()
         os.system("start ./TestReport.docx")

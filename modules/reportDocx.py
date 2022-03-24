@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 import inflect
 
@@ -7,6 +8,12 @@ from docx.shared import Inches, Pt, Mm, Emu
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
+
+note = '''The results in this report relate only to the item(s) as received and tested. Each received item is marked with case number, item number and duly signed. '''
+
+footer = f'''Analyzed by: _________________ Date:___________Reviewed by: __________________ Date:___________   
+                             FTM-10-FS 				                                    FTM-38-FS 
+'''
 
 '''
 NOTE There should be a template docx in the folder with the following custom sytles
@@ -26,7 +33,7 @@ class Report():
         style1.base_style = styles["Normal"]
         fontOfStyle1 = style1.font
         fontOfStyle1.name = "Times New Roman"
-        fontOfStyle1.size = Pt(14)
+        fontOfStyle1.size = Pt(11)
         fontOfStyle1.bold = True
         paragraphFormat = style1.paragraph_format
         paragraphFormat.space_before = Pt(0)
@@ -98,12 +105,11 @@ class Report():
             sectionMain.left_margin = Inches(0.75)
             sectionMain.right_margin = Inches(0.7)
             sectionMain.header_distance = Inches(.39)
-            sectionMain.footer_distance = Inches(1.18)
+            # sectionMain.footer_distance = Inches(1.18)
 
             return 'First Section of A4 pages size is created.'
         else:
             return 'Page size not supported.'
-    
     
     #CREATE HEADING OF THE REPORT
     def paraTOD(self):
@@ -126,10 +132,10 @@ class Report():
         tableCaseDetails.rows[0].cells[1].width = Mm(70)
         tableCaseDetails.rows[0].cells[2].width = Mm(32)
         tableCaseDetails.rows[0].cells[3].width = Mm(52)
-        # tableCaseDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        # tableCaseDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        # tableCaseDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        # tableCaseDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        tableCaseDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        tableCaseDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        tableCaseDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        tableCaseDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
         #TABLE VALUES
         firstRowCells = tableCaseDetails.rows[0].cells
@@ -160,8 +166,7 @@ class Report():
         EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         EVdescriptionParagraph.add_run(f"""The following evidence {wasORwere} submitted along with the request of {Addressee} for """, style='SimpleText')
-        EVdescriptionParagraph.add_run(f"{testRequest}.").bold =True
-
+        EVdescriptionParagraph.add_run(f"{testRequest}.\n").bold =True
 
     #CREATE TABLE OF EVIDENCE INFORMATION
     def tableEvDetails(self, parcels, noOfParcels):
@@ -170,15 +175,32 @@ class Report():
         tableEVDetails.style = 'TableGridCustom'
         tableEVDetails.allow_autofit = False
 
+        # Column 1 PARCEL NO WIDTH
+        for cell in tableEVDetails.columns[0].cells:
+            cell.width = Mm(10)
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+
+        # Column 2 WIDTH
+        for cell in tableEVDetails.columns[1].cells:
+            cell.width = Mm(25)
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        
+        # Column 4 WIDTH
+        for cell in tableEVDetails.columns[3].cells:
+            cell.width = Mm(90)
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        
+        # table.cell(0, 0).vertical_alignment = WD_ALIGN_VERTICAL.BOTTOM
+
         #NOTE length of table is 180mm
-        tableEVDetails.rows[0].cells[0].width = Mm(0)
-        tableEVDetails.rows[0].cells[1].width = Mm(55)
-        tableEVDetails.rows[0].cells[2].width = Mm(57)
-        tableEVDetails.rows[0].cells[3].width = Mm(77)
-        tableEVDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        tableEVDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        tableEVDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        tableEVDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        # tableEVDetails.rows[0].cells[0].width = Mm(15)
+        # tableEVDetails.rows[0].cells[1].width = Mm(55)
+        # tableEVDetails.rows[0].cells[2].width = Mm(57)
+        # tableEVDetails.rows[0].cells[3].width = Mm(77)
+        tableEVDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        tableEVDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        tableEVDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        tableEVDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
         firstRowCells = tableEVDetails.rows[0].cells
         firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
@@ -188,15 +210,16 @@ class Report():
         
         ie = inflect.engine()
 
-
+        # This variable moves used to add item to previous  
         d = 0
+        
         for i, parcel in enumerate(parcels, start=0):
             print(i)
             q = ie.number_to_words(parcel[10])
             if(parcel[0]!=parcels[i-1][0]):
                 nextRowCells = tableEVDetails.rows[i+1+d].cells
                 nextRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
-                nextRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) &\n{parcel[1]}', style='SimpleText')
+                nextRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
                 nextRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
                 nextRowCells[3].paragraphs[0].add_run(f'{q} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
 
@@ -210,15 +233,13 @@ class Report():
         #This is to seprate next table from this one
         self.document.add_paragraph('', style='CompactParagraph')
 
-
-
     #CREATE TABLE OF ANALYSIS INFORMATION
     def tableAnalysisDetails(self):
-        tableAnalysis = self.document.add_table(rows=1, cols=3)
+        tableAnalysis = self.document.add_table(rows=2, cols=3)
         tableAnalysis.style = 'TableGridCustom'
         tableAnalysis.allow_autofit = False
         #Length of table is 180mm
-        tableAnalysis.rows[0].cells[0].width = Mm(40)
+        tableAnalysis.rows[0].cells[0].width = Mm(10)
         tableAnalysis.rows[0].cells[1].width = Mm(50)
         tableAnalysis.rows[0].cells[2].width = Mm(90)
         tableAnalysis.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
@@ -244,16 +265,17 @@ class Report():
 
     #CREATE NOTE(S)
     def paraNotes(self):
-        notesHeading = self.document.add_paragraph("", style="BoldUnderline")
-        notesHeading.add_run('Note(s):').font.size = Pt(12)
-        listNotes = ['This is the first note.', 'This is the second note.']
-        for i in listNotes:
-            self.document.add_paragraph(style="BulletCustomNormal").add_run(f"{i}", style="SimpleText").font.italic = True
+        notesHeading = self.document.add_paragraph("", style="BoldItalic")
+        run1 = notesHeading.add_run(f'Note(s): {note}').font.size = Pt(11)
+
+        # listNotes = ['This is the first note.', 'This is the second note.']
+        # for i in listNotes:
+        #     self.document.add_paragraph(style="BulletCustomNormal").add_run(f"{i}", style="SimpleText").font.italic = True
 
     #CREATE DIPOSITION OF EVIDENCE PARAGRAPH
     def paraDisposition(self):
         dispositionHeading = self.document.add_paragraph("", style="BoldUnderline")
-        dispositionHeading.add_run('Disposition of Heading:').font.size = Pt(12)
+        dispositionHeading.add_run('Disposition of Heading:').font.size = Pt(11)
         dispositionParagraph = self.document.add_paragraph('The case property/ evidence may be received by the responsible official of your office on submitting authorization letter/docket within 15 days after the receipt of this report.  Ammunition components should be maintained for possible future examinations.', style='CompactParagraph')
         dispositionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         EORParagraph = self.document.add_paragraph('', style='Bold')
@@ -266,7 +288,9 @@ class Report():
         sectionMain = sections[0]
         footers = sectionMain.footer
         paragraphFooter = footers.paragraphs[0]
-        paragraphFooter.text = "\tThis is footer"
+        paragraphFooter.text = f"{footer}"
+        for run in paragraphFooter.runs:
+            run.font.size = Pt(10)
 
     def save(self):
         self.document.save("./TestReport.docx")
