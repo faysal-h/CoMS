@@ -476,7 +476,7 @@ class ReportProcessor(Sheets):
 
         testReport = Report()
         testReport.PageLayout('A4')
-        # testReport.add_styles()
+        testReport.add_styles()
         testReport.paraTOD()
         testReport.tableCaseDetails(caseNo1= self.fullCaseNumber, caseNo2=self.AdditionalCaseNumbers, 
                                         addressee=self.addressee, district=self.district)
