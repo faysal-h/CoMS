@@ -7,8 +7,17 @@ class UserPaths():
     userHomePath = os.path.expanduser("~")
 
     def __init__(self) -> None:
-        self.CurrentCaseWorkFolder = self.checkNcreateCaseWorkDirectory()
+        self.CurrentCaseWorkParentFolder = self.checkNcreateCaseWorkDirectory()
         self.CurrentWeekFolder = self.makeCurrentWeekFolder()
+
+
+    def currentCaseFolder(self, folderNameToMake:str):
+        currentCaseFolderPath = os.path.join(self.CurrentWeekFolder, folderNameToMake)
+        if os.path.isdir(currentCaseFolderPath):
+            return currentCaseFolderPath
+        else:
+            os.makedirs(currentCaseFolderPath)
+            return currentCaseFolderPath
 
     # CHeck if a CASEWORK folder exist. if None then create a casework directory on desktop
     # and then return the path.
@@ -54,7 +63,7 @@ class UserPaths():
         currentMonth = datetime.datetime.now().strftime("%B")
         currentWeek = self.week_of_month()
 
-        currentWeekFolder = os.path.join(self.CurrentCaseWorkFolder, currentYear, currentMonth, currentWeek)
+        currentWeekFolder = os.path.join(self.CurrentCaseWorkParentFolder, currentYear, currentMonth, currentWeek)
 
         if os.path.isdir(currentWeekFolder):
             return currentWeekFolder
@@ -64,7 +73,7 @@ class UserPaths():
 
 if __name__ == "__main__":
     path = UserPaths()
-    print(path.CurrentCaseWorkFolder)
+    print(path.CurrentCaseWorkParentFolder)
     path.fileWriteableStateCheck("C:\\Users\\Faisal\\Desktop\\Casework\\123456-1-firearms.docx")
     print('Test')
     print(path.CurrentWeekFolder)
