@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+import logging
 
 import inflect
 
@@ -8,6 +8,15 @@ from docx.shared import Inches, Pt, Mm, Emu
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
+
+logging.basicConfig(level=logging.DEBUG)
+
+itemsToCheck = {
+                'R': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+                'P': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+                'S': f': test fires produced in the lab {itemNo}TS1 & {itemNo}TS2',
+                'M': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+                }
 
 note = ("The results in this report relate only to the item(s) as"
         " received and tested. Each received item is marked with case number,"
@@ -28,6 +37,29 @@ NOTE The page numbering field should also be enabled as page numbering is not su
 class Report():
     def __init__(self):
         self.document = Document('./modules/templates/template.docx')
+
+    def testFiresStatementFromItemNo(self, EvType: str, itemNo: str):
+        logging.info(f"Evidence Type is {EvType}, Item No is {itemNo}")
+        # Dictionary for test fires
+        # itemsToCheck = {
+        #                 'R': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+        #                 'P': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+        #                 'S': f': test fires produced in the lab {itemNo}TS1 & {itemNo}TS2',
+        #                 'M': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+        #                 }
+
+        if itemNo == None or "":
+            return ""
+        else:
+            itemNo = itemNo.upper()
+            if(EvType == "firearm"):
+                # loops through dictionary to find respective item test fires names
+                for key in itemsToCheck:
+                    if(itemNo.find(key) != -1):
+                        logging.info(f"this test fire is found {itemsToCheck[key]}")
+                        return itemsToCheck[key]
+            else:
+                return ""
         
     #NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
     def add_styles(self):
@@ -115,19 +147,6 @@ class Report():
         else:
             return 'Page size not supported.'
     
-    def delete_paragraph(self, paragraph):
-        p = paragraph._element
-        p.getparent().remove(p)
-        p._p = p._element = None
-
-    def cleanBlanLines(self):
-        # code snippet
-        for paragraph in self.document.paragraphs:
-            if paragraph.text == "\n":
-                self.delete_paragraph(paragraph)
-
-        # self.document._body.clear_content()
-
     #CREATE HEADING OF THE REPORT
     def paraTOD(self):
         titleOfDocument = self.document.add_paragraph("", style="Bold")
@@ -192,22 +211,7 @@ class Report():
         tableEVDetails = self.document.add_table(rows=1, cols=4)
         tableEVDetails.style = 'TableGridCustom'
         tableEVDetails.allow_autofit = False
-
-        # Column 1 PARCEL NO WIDTH
-        for cell in tableEVDetails.columns[0].cells:
-            cell.width = Mm(10)
-            cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
-
-        # Column 2 WIDTH
-        for cell in tableEVDetails.columns[1].cells:
-            cell.width = Mm(25)
-            cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        
-        # Column 4 WIDTH
-        for cell in tableEVDetails.columns[3].cells:
-            cell.width = Mm(90)
-            cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        
+     
 
         firstRowCells = tableEVDetails.rows[0].cells
         firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
@@ -216,7 +220,6 @@ class Report():
         firstRowCells[3].paragraphs[0].add_run('Evidence Details\nItem No#', style='TableHeading')
         
         for i, parcel in enumerate(parcels, start=0):
-            print(i)
 
             # converts quantity of items from digits to words
             quantityInWords = inflect.engine().number_to_words(parcel[10])
@@ -237,11 +240,30 @@ class Report():
 
 
                 # newRowCells = tableEVDetails.rows[i+1+d].cells
+                # Parcel NUMBER CELL parcel[0] == PARCEL NO
                 newRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
+                
+                # SUBMITTER CELL
+                # parcel[1] == SUBMISSION DATE
+                # parcel[2] == SUBMITTER NAME
+                # parcel[3] == SUBMITTER RANK
                 newRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
-                newRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]}) \n{parcel[12]}, {parcel[13]}', style='SimpleText')
-                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})'
-                            + accused, style='SimpleText')
+                
+                # FIR & PS CELL
+                # parcel[4] == FIR
+                # parcel[5] == FIR DATE
+                # parcel[12] == PS
+                # parcel[1] == DISTRICT
+                newRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]})'
+                                f' \n{parcel[12]}, {parcel[13]}', style='SimpleText')
+
+                # ITEM DETAILS CELL
+                # parcel[6] == CALIBER
+                # parcel[7] == ITEM DETAILS likE CARTRIDGE CASE OR PISTOL
+                # parcel[9] == ITEMS NUMBERS
+                testFires = self.testFiresStatementFromItemNo(EvType=parcel[7], itemNo=parcel[9])
+                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} '
+                                f'(Items {parcel[9]}{testFires}){accused}', style='SimpleText')
 
             else:
                 # move to last row of table

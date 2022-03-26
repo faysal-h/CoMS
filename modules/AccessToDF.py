@@ -1,5 +1,5 @@
 import os
-from datetime import date, datetime
+from datetime import datetime
 
 import pandas as pd
 import pyodbc
@@ -61,9 +61,9 @@ class AccessFile():
 
             self.cnxn = pyodbc.connect(conn_str)
             self.crsr = self.cnxn.cursor()
-            print('Database Opened.')
-        except:
-            print("connection to database is not established.")
+            print('Connection to Database Established.')
+        except ValueError as e:
+            print(f"connection to database is not established.\n Error is : {e}")
 
     def closeConnection(self):
         self.cnxn.close()
@@ -74,6 +74,7 @@ class AccessFile():
             print("Reading Query Failure. No data found against this case number.")
         else:
             print("Reading Query Success. Data found against this case number.")
+            self.closeConnection()
             return df
 
 

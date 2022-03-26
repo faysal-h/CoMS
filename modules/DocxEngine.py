@@ -311,7 +311,7 @@ class ProcessingSheetProcessor(Sheets):
         # Q = inflectEngine.number_to_words(Quantity)
 
         if(ParcelNo == "and"):
-            return f"and {Q} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
+            return f"and {Quantity} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
         else:
             return f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
 
