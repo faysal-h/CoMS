@@ -4,19 +4,12 @@ import logging
 import inflect
 
 from docx import Document
-from docx.shared import Inches, Pt, Mm, Emu
+from docx.shared import Inches, Pt, Mm
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
 
 logging.basicConfig(level=logging.DEBUG)
-
-itemsToCheck = {
-                'R': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-                'P': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-                'S': f': test fires produced in the lab {itemNo}TS1 & {itemNo}TS2',
-                'M': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-                }
 
 note = ("The results in this report relate only to the item(s) as"
         " received and tested. Each received item is marked with case number,"
@@ -39,14 +32,13 @@ class Report():
         self.document = Document('./modules/templates/template.docx')
 
     def testFiresStatementFromItemNo(self, EvType: str, itemNo: str):
+        itemsToCheck = {
+                        'R': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+                        'P': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+                        'S': f': test fires produced in the lab {itemNo}TS1 & {itemNo}TS2',
+                        'M': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
+                        }
         logging.info(f"Evidence Type is {EvType}, Item No is {itemNo}")
-        # Dictionary for test fires
-        # itemsToCheck = {
-        #                 'R': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-        #                 'P': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-        #                 'S': f': test fires produced in the lab {itemNo}TS1 & {itemNo}TS2',
-        #                 'M': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-        #                 }
 
         if itemNo == None or "":
             return ""
@@ -363,8 +355,8 @@ class Report():
         for run in paragraphFooter.runs:
             run.font.size = Pt(10)
 
-    def save(self):
-        self.document.save("./TestReport.docx")
+    def save(self, saveLocation):
+        self.document.save(saveLocation)
 
 if __name__ == '__main__':
     testReport = Report()
@@ -381,4 +373,4 @@ if __name__ == '__main__':
     testReport.footer()
     testReport.save()
 
-    os.system("start ./TestReport.docx")
+    # os.system("start ./TestReport.docx")

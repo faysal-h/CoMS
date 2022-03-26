@@ -1,15 +1,13 @@
-import os
+import logging
 
-from CusPath import UserPaths
 
 from docx import Document
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, Mm, Emu, Cm
+from docx.shared import Inches, Pt, Mm
 from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_ALIGN_VERTICAL
 
-caseworkFolder = UserPaths().CurrentCaseWorkFolder
+
+logging.basicConfig(level=logging.DEBUG)
 
 class IdentifiersDocument():
     def __init__(self) -> None:
@@ -66,10 +64,11 @@ class IdentifiersDocument():
         else:
             return 'Page size not supported.'
 
-    def saveDoc(self,pathToSaveFile, IdentifiersORevnelops='Identifiers'):
+    def saveDoc(self, saveLocation, IdentifiersORevnelops='Identifiers'):
 
-        self.document.save(pathToSaveFile)
-        print(f"Document Identifier Saved in {caseworkFolder}.")
+        self.document.save(saveLocation)
+        logging.info(f"Identififers file saved in {saveLocation}")
+
 
     def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, firDate, ps, district):
         id = self.document.add_paragraph("", style="Bold16")

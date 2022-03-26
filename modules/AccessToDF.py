@@ -1,4 +1,5 @@
 import os
+import logging
 from datetime import datetime
 
 import pandas as pd
@@ -61,9 +62,9 @@ class AccessFile():
 
             self.cnxn = pyodbc.connect(conn_str)
             self.crsr = self.cnxn.cursor()
-            print('Connection to Database Established.')
+            logging.info('Connection to Database Established.')
         except ValueError as e:
-            print(f"connection to database is not established.\n Error is : {e}")
+            logging.error(f"connection to database is not established.\n Error is : {e}")
 
     def closeConnection(self):
         self.cnxn.close()
@@ -71,9 +72,10 @@ class AccessFile():
     def readQuery(self, Query):
         df = pd.read_sql_query(Query, self.cnxn)
         if(df.empty):
-            print("Reading Query Failure. No data found against this case number.")
+            logging.error("Reading Query Failure. No data found against this case number.")
+            return None
         else:
-            print("Reading Query Success. Data found against this case number.")
+            logging.info("Reading Query Success. Data found against this case number.")
             self.closeConnection()
             return df
 
@@ -158,7 +160,6 @@ class ParcelsDF(Tables):
 
     def getParcelDetailsForReport(self):
         parcelsForReport = self.parcelsDF.drop(['CaseNoFK'], axis=1).sort_values('ParcelNo')
-        print(parcelsForReport)
         parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
         parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
         return parcelsForReport.values.tolist()

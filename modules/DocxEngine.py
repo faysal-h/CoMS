@@ -1,4 +1,5 @@
 
+import logging
 import os
 
 import inflect
@@ -27,13 +28,13 @@ class IdentifiersProcessor():
     def __init__(self, batchDate) -> None:
         self.batchDate = batchDate
 
-
+        self.currentWeekPath = UserPaths().CurrentWeekFolder
         # List of Identifiers from dataframe
         self.Identifiers = IdentifiersDF(self.batchDate).identifiersDF.values.tolist()
         
         
 
-    def FileIdentifierMaker(self, saveLocation):
+    def FileIdentifierMaker(self):
         i = IdentifiersDocument()
         i.PageLayout('A4')
         i.add_styles()
@@ -49,9 +50,9 @@ class IdentifiersProcessor():
                                 fir=str(identifier[6]), firDate=identifier[7], ps=str(identifier[8]),
                                 district=str(identifier[9]))
 
-        i.saveDoc(os.path.join(saveLocation, f"Identifiers.docx"))
+        i.saveDoc(os.path.join(self.currentWeekPath, f"Identifiers.docx"))
 
-    def EnvelopsMaker(self, saveLocation):
+    def EnvelopsMaker(self):
         i = IdentifiersDocument()
         i.PageLayout('A4')
         i.add_styles()
@@ -65,7 +66,7 @@ class IdentifiersProcessor():
             # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
             i.addEnvelopsIdentifiers(caseNo1=caseNoFull, AddressTo=envelop[4],district=str(envelop[9]) )
 
-        i.saveDoc(os.path.join(saveLocation, "Envelops.docx"))
+        i.saveDoc(os.path.join(self.currentWeekPath, "Envelops.docx"))
 
 
 class Sheets():
@@ -73,6 +74,7 @@ class Sheets():
     # Gets all required data in the form of dataframes and tables
     def __init__(self, ftmNumber) -> None:
         self.ftmNumber = ftmNumber
+
 
         # create instance of Dataframes to be used in all sheets processor
         self.caseDetailsDF = CaseDetailsDF(self.ftmNumber)
@@ -90,6 +92,8 @@ class Sheets():
         self.BalscanDate = self.CoCDF.getCOCdateString("BalScanCompDate")
         self.toCPRdate = self.CoCDF.getCOCdateString('toCPRDate')
 
+        #path of CASE Folder
+        self. currentCaseFolderPath = UserPaths().currentCaseFolder(self.fullCaseNumber)
 
     def fullCaseNumber(self) -> str:
         x = self.caseDetailsDF.getCaseNoParts()
@@ -311,9 +315,9 @@ class ProcessingSheetProcessor(Sheets):
         # Q = inflectEngine.number_to_words(Quantity)
 
         if(ParcelNo == "and"):
-            return f"and {Quantity} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
+            return (f"and {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}")
         else:
-            return f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}"
+            return (f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}")
 
     # gets LIST of parcels in case and used it to combine in a single string.
     def getAndSetParcels(self):
@@ -322,29 +326,35 @@ class ProcessingSheetProcessor(Sheets):
         caseDetailsList = []
 
         for index, item in enumerate(parcels):
+            logging.info(f"index {index}")
             # for parcel add PARCEL 1 to start
             if(index == 0):
-                caseDetailsList.append(self.parcelDetailsStringMaker(ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1]
-                                                , EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                caseDetailsList.append(self.parcelDetailsStringMaker(
+                                        ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1],
+                                        EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
             else:
                 # gets the parcel No of previous parcel
                 oldParcelNo = parcels[index-1][0]
 
                 if(item[0] != oldParcelNo):
-                    caseDetailsList.append(self.parcelDetailsStringMaker(ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1]
-                                                    , EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                    caseDetailsList.append(self.parcelDetailsStringMaker(
+                                            ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1], 
+                                            EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
                 else:
-                    caseDetailsList.append(self.parcelDetailsStringMaker(ParcelNo="and", Quantity=item[5], EVCaliber=item[1]
-                                                    , EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                    caseDetailsList.append(self.parcelDetailsStringMaker(
+                                            ParcelNo="and", Quantity=item[5], EVCaliber=item[1], 
+                                            EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
         # this method also joins parcel string and returns a single string of case details for 
-        # processing sheet        
-        return (", ").join(caseDetailsList)
+        # processing sheet
+        logging.info(caseDetailsList)
+        return ("").join(caseDetailsList)
 
     # Poplulate and Generate Processing Sheet
-    def proceesingSheetMaker(self, saveLocation):
+    def proceesingSheetMaker(self):
         context = self.setCoCandEVdetails()
         self.processingDocTemplate.render(context)
-        self.processingDocTemplate.save(os.path.join(saveLocation, f'1. Processing Sheet-{self.ftmNumber}.docx'))
+        self.processingDocTemplate.save(os.path.join(self.currentCaseFolderPath,
+                                        f'1. Processing Sheet-{self.ftmNumber}.docx'))
 
 
 class FirearmsProcessor(Sheets):
@@ -359,7 +369,7 @@ class FirearmsProcessor(Sheets):
 
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
-    def firearmSheetMaker(self, saveLocation):
+    def firearmSheetMaker(self):
         if len(self.firearms) > 0: 
             for firearm in self.firearms:
                 yearShort = str(self.caseNumberParts[0])
@@ -370,17 +380,15 @@ class FirearmsProcessor(Sheets):
                                 'ITEM': firearm[4],
                                 'EXAMINER': self.analyst,
                                 'REVIEWER': self.reviewer,
-                                'DATE' : self.processingDate.strftime(DateFormat),
+                                'DATE' : self.processingDate,
                                 'CALIBER' : firearm[1],
                                 'FTMNO' : self.caseNumberParts[2],
                                 'MARKING': str(firearm[4])+"/"+str(self.caseNumberParts[1])+"/"+yearShort[2:],
                                 'ABIS': self.BalscanDate,
-
-
                             }
 
                 self.firearmsDocTemplate.render(context)
-                self.firearmsDocTemplate.save(os.path.join(saveLocation,
+                self.firearmsDocTemplate.save(os.path.join(self.currentCaseFolderPath,
                                                  f"2. firearms-{self.ftmNumber}-{firearm[0]}.docx"))
         else:
             print("No firearms sheet is generated as no data is passed to processor")
@@ -398,21 +406,21 @@ class CartridgeProcessor(Sheets):
 
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
-    def cartridgeSheetMaker(self, saveLocation):
+    def cartridgeSheetMaker(self):
         context =   {   
                         'AGENCY_CASE' : self.fullCaseNumber,
                         'AGENCY_CASE2' : self.AdditionalCaseNumbers,
                         'EXAMINER': self.analyst,
                         'REVIEWER': self.reviewer,
-                        'DATE' : self.processingDate.strftime(DateFormat),
+                        'DATE' : self.processingDate,
                         # 'CALIBER' : cartridge[1],
                         # 'FTMNO' : self.caseNumberParts[2],
                         # 'MARKING': str(cartridge[4])+"/"+str(self.caseNumberParts[1])+"/"+yearShort[2:],
                         # 'ABIS': self.BalscanDate.strftime(DateFormat),
                     }
         self.cartridgeTemplate.render(context)
-        self.cartridgeTemplate.save(os.path.join(saveLocation,
-                                        f"3. cartridge{self.ftmNumber}.docx"))
+        self.cartridgeTemplate.save(os.path.join(self.currentCaseFolderPath,
+                                        f"3. cartridge-{self.ftmNumber}.docx"))
 
 
 class BulletProcessor(Sheets):
@@ -427,7 +435,7 @@ class BulletProcessor(Sheets):
 
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
-    def bulletSheetMaker(self, saveLocation):
+    def bulletSheetMaker(self):
         # for bullet in self.bullets:
         #     # yearShort = str(self.caseNumberParts[0])
 
@@ -436,14 +444,14 @@ class BulletProcessor(Sheets):
                             'AGENCY_CASE2' : self.AdditionalCaseNumbers,
                             'EXAMINER': self.analyst,
                             'REVIEWER': self.reviewer,
-                            'DATE' : self.processingDate.strftime(DateFormat),
+                            'DATE' : self.processingDate,
                             # 'CALIBER' : cartridge[1],
                             # 'FTMNO' : self.caseNumberParts[2],
                             # 'MARKING': str(cartridge[4])+"/"+str(self.caseNumberParts[1])+"/"+yearShort[2:],
                             # 'ABIS': self.BalscanDate.strftime(DateFormat),
                         }
             self.bulletDocTemplate.render(context)
-            self.bulletDocTemplate.save(os.path.join(saveLocation,
+            self.bulletDocTemplate.save(os.path.join(self.currentCaseFolderPath,
                                             f"4. bullet-{self.ftmNumber}.docx"))
         
         
@@ -482,8 +490,8 @@ class ReportProcessor(Sheets):
         testReport.paraNotes()
         testReport.paraDisposition()
         # testReport.footer()
-        testReport.save()
-        os.system("start ./TestReport.docx")
+        testReport.save(os.path.join(self.currentCaseFolderPath, f'Report {self.ftmNumber}.docx'))
+        # os.system(f"start ./TestReport.docx")
 
 
 
@@ -496,23 +504,25 @@ if __name__ == "__main__":
     
 
 
-    # i = IdentifiersProcessor("1/3/2022")
-    # i.FileIdentifierMaker(UserPaths().checkNcreateCaseWorkDirectory())
-    # i.EnvelopsMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    i = IdentifiersProcessor("1/3/2022")
+    i.FileIdentifierMaker()
+    i.EnvelopsMaker()
    
-    # p = ProcessingSheetProcessor(123456)
-    # print(p.proceesingSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
-    # # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
+    p = ProcessingSheetProcessor(123456)
+    print(p.currentCaseFolderPath)
+    print(p.proceesingSheetMaker())
+    # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
-    # f = FirearmsProcessor(123456)
-    # print(f.firearms)
-    # print(f.firearmSheetMaker(UserPaths().checkNcreateCaseWorkDirectory()))
+    f = FirearmsProcessor(123456)
+    print(f.currentCaseFolderPath)
+    print(f.firearmSheetMaker())
 
-    # c = CartridgeProcessor(123456)
-    # # print(c.cartridges)
-    # c.cartridgeSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    c = CartridgeProcessor(123456)
+    # print(c.cartridges)
+    c.cartridgeSheetMaker()
 
-    # b = BulletProcessor(123456)
-    # b.bulletSheetMaker(UserPaths().checkNcreateCaseWorkDirectory())
+    b = BulletProcessor(123456)
+    b.bulletSheetMaker()
 
     # print(UserPaths().checkNcreateCaseWorkDirectory())
+    os.system(f"start {r.currentCaseFolderPath}")
