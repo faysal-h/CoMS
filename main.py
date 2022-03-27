@@ -25,6 +25,10 @@ class menu():
         pymsgbox.alert(text="Enter a VALID 5 or 6 digits FTM number only.",
                             title="What are you doing?", button="Ok. I'm sorry")
 
+    def wrongDateWarning(self):
+        pymsgbox.alert(text="Enter valid date or Date does Not exist in Database.", title="Warning")
+        self.run()
+
     def getCaseNoFromUser(self):
         ftmNo = pymsgbox.prompt(text='Enter FTM number', title="Sheet Generator")
         
@@ -38,12 +42,13 @@ class menu():
         batchDate = pymsgbox.prompt(text='Enter Batch Dat', title="Identifiers Generator")
         
         if(batchDate is None):
-            self.run
+            self.run()
         else:
-            if(self.is_date(batchDate) and DataFrames(ftmNo="").checkIfBatcDateExist(BatchDate=batchDate)):
+            parsedDate = self.parse_date(batchDate)
+            if(DataFrames(ftmNo="").checkIfBatcDateExist(BatchDate=parsedDate)):
                 self.generateIdentifiers(batchDate=batchDate)
             else:
-                pymsgbox.alert(text="Enter valid date or Date does Not exist in Database.", title="Warning")
+                self.wrongDateWarning()
     
     def userPrompt(self):
         # return pymsgbox.prompt(text="Enter FTM Number for sheets.\nEnter BATCH DATE for Identifiers", title='CMS')
@@ -77,7 +82,7 @@ class menu():
         else:
             self.numericORlengthWarning()
 
-    def is_date(self, batchDate, fuzzy=False):
+    def parse_date(self, batchDate):
         """
         Return whether the string can be interpreted as a date.
 
@@ -85,11 +90,11 @@ class menu():
         :param fuzzy: bool, ignore unknown tokens in string if True
         """
         try: 
-            parse(batchDate, fuzzy=fuzzy)
-            return True
+            batchDate = parse(batchDate, fuzzy=False, dayfirst=True)
+            return batchDate.strftime('%d/%m/%Y')
 
         except ValueError:
-            return False
+            return self.wrongDateWarning()
 
     def generateSheets(self, ftmNumber):
         DocxEngine.ProcessingSheetProcessor(ftmNumber=ftmNumber).proceesingSheetMaker()
