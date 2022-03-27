@@ -73,7 +73,7 @@ class AccessFile():
         df = pd.read_sql_query(Query, self.cnxn)
         if(df.empty):
             logging.error("Reading Query Failure. No data found against this case number.")
-            return None
+            return df
         else:
             logging.info("Reading Query Success. Data found against this case number.")
             self.closeConnection()
@@ -82,7 +82,7 @@ class AccessFile():
 
 
 
-class Tables():
+class DataFrames():
     '''This class and its child classess read queries and manipulate data in the form of 
         PANDAS DATAFRAMES'''
     def __init__(self, ftmNo) -> None:
@@ -92,8 +92,22 @@ class Tables():
     def getTableByFtmNo(self, queryToRead:str) -> pd.DataFrame:
         return self.database.readQuery(f"{queryToRead} {self.ftmNo}));")
         
+    def checkIfCaseExist(self) -> bool:
+        tempDF = self.database.readQuery(f"{queryCaseDetails} {self.ftmNo}));")
+        if(tempDF.empty):
+            return False
+        else:
+            return True
 
-class CaseDetailsDF(Tables):
+    def checkIfBatcDateExist(self, BatchDate) -> bool:
+        tempDF = self.database.readQuery(
+                    f"{queryCaseDetailsForIdentifiersDate} WHERE (((CaseDetails.Batch)=#{BatchDate}#))")
+        if(tempDF.empty):
+            return False
+        else:
+            return True
+
+class CaseDetailsDF(DataFrames):
     '''class for manipulating DATAFRMAE of  Case Details Table in ACCESS DATABASE'''
 
     def __init__(self, ftmNo) -> None:
@@ -107,7 +121,7 @@ class CaseDetailsDF(Tables):
         return self.caseDetailsDF.iloc[indexNumber][columnName]
         
 
-class CoCDF(Tables):
+class CoCDF(DataFrames):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
         self.cocDF = self.getTableByFtmNo(queryCOC)
@@ -125,7 +139,7 @@ class CoCDF(Tables):
             return dateToReturn.strftime(customDateFormat)
             
 
-class ParcelsDF(Tables):
+class ParcelsDF(DataFrames):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
         self.parcelsDF = self.getTableByFtmNo(queryParcelsDetails)
@@ -164,7 +178,7 @@ class ParcelsDF(Tables):
         parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
         return parcelsForReport.values.tolist()
 
-class IdentifiersDF(Tables):
+class IdentifiersDF(DataFrames):
 
     def __init__(self, BatchDate="", ftmNo="") -> None:
         super().__init__(ftmNo)
