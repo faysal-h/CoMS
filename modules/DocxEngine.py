@@ -4,13 +4,13 @@ import os
 
 import inflect
 from docxtpl import DocxTemplate
-from CusPath import UserPaths
+from modules.CusPath import UserPaths
 
-from AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
-from AccessToDF import IdentifiersDF
+from modules.AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
+from modules.AccessToDF import IdentifiersDF
 
-from identifierDocx import IdentifiersDocument
-from reportDocx import Report
+from modules.identifierDocx import IdentifiersDocument
+from modules.reportDocx import Report
 
 processingTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\processing.docx")
 firearmsTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\firearms.docx")
@@ -32,8 +32,6 @@ class IdentifiersProcessor():
         # List of Identifiers from dataframe
         self.Identifiers = IdentifiersDF(self.batchDate).identifiersDF.values.tolist()
         
-        
-
     def FileIdentifierMaker(self):
         i = IdentifiersDocument()
         i.PageLayout('A4')
@@ -93,7 +91,7 @@ class Sheets():
         self.toCPRdate = self.CoCDF.getCOCdateString('toCPRDate')
 
         #path of CASE Folder
-        self. currentCaseFolderPath = UserPaths().currentCaseFolder(self.fullCaseNumber)
+        self.currentCaseFolderPath = UserPaths().currentCaseFolder(self.fullCaseNumber)
 
     def fullCaseNumber(self) -> str:
         x = self.caseDetailsDF.getCaseNoParts()
@@ -491,7 +489,9 @@ class ReportProcessor(Sheets):
         testReport.paraDisposition()
         # testReport.footer()
         testReport.save(os.path.join(self.currentCaseFolderPath, f'Report {self.ftmNumber}.docx'))
-        # os.system(f"start ./TestReport.docx")
+        
+        os.system(f"start {self.currentCaseFolderPath}")
+        
 
 
 
