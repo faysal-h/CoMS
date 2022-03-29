@@ -32,6 +32,13 @@ class IdentifiersProcessor():
         # List of Identifiers from dataframe
         self.Identifiers = IdentifiersDF(self.batchDate).identifiersDF.values.tolist()
         
+    def noneToEmptyValue(self, value):
+        if(value==None):
+            return ""
+        else:
+            return value
+
+
     def FileIdentifierMaker(self):
         i = IdentifiersDocument()
         i.PageLayout('A4')
@@ -42,9 +49,9 @@ class IdentifiersProcessor():
             print(identifier)
 
             caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
+            caseNo2 = self.noneToEmptyValue(identifier[5])
 
-            # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
-            i.addFileIdentifiers(caseNo1=caseNoFull, caseNo2=str(identifier[5]), parcels=str(identifier[10]),
+            i.addFileIdentifiers(caseNo1=caseNoFull, caseNo2=str(caseNo2), parcels=str(identifier[10]),
                                 fir=str(identifier[6]), firDate=identifier[7], ps=str(identifier[8]),
                                 district=str(identifier[9]))
 
