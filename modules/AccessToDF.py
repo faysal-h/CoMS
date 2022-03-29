@@ -3,9 +3,10 @@ import logging
 from datetime import datetime
 from dateutil.parser import parse
 
-import pandas as pd
 import pyodbc
+import pandas as pd
 
+logging.basicConfig(level=logging.INFO)
 
 dbPath = os.path.join(os.getcwd(), "CMSdatabase.accdb")
 
@@ -125,16 +126,22 @@ class CaseDetailsDF(DataFrames):
 class CoCDF(DataFrames):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
-        self.cocDF = self.getTableByFtmNo(queryCOC)
+
+        self.cocDF = self.getTableByFtmNo(queryCOC).drop_duplicates(
+                                subset=['caseFTMFK'], keep='last')
     
     def getCOCdate(self, whichTypeOfDate) -> datetime:
-        return self.cocDF.drop_duplicates(subset=['caseFTMFK'], 
-                                    keep='last').iloc[0][whichTypeOfDate].to_pydatetime()
 
+        x = self.cocDF.iloc[0][whichTypeOfDate]
+
+        if(pd.isnull(x)):
+            return ""
+        else:
+            return self.cocDF.iloc[0][whichTypeOfDate].to_pydatetime()
 
     def getCOCdateString(self, whichTypeOfDate : str) -> str:
         dateToReturn = self.getCOCdate( whichTypeOfDate)
-        if(type(dateToReturn) == type(pd.NaT)):
+        if((type(dateToReturn) == type(pd.NaT)) or dateToReturn == ""):
             return ""
         else:
             return dateToReturn.strftime(customDateFormat)
@@ -184,7 +191,7 @@ class IdentifiersDF(DataFrames):
     def __init__(self, BatchDate, ftmNo="") -> None:
         super().__init__(ftmNo)
         self.BatchDate = BatchDate
-        if not (self.BatchDate) == parse(BatchDate, fuzzy=False, dayfirst=True):
+        if (self.BatchDate) != parse(BatchDate, fuzzy=False, dayfirst=True):
             self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiersDate)
         else:
             self.identifiersDF = self.getTableByFtmNo(queryCaseDetailsForIdentifiersFtm)
@@ -223,15 +230,23 @@ if __name__ == "__main__":
 
     # print(p.getParcelDetailsForReport())
 
-    i = IdentifiersDF('28/02')
-    print(i.identifiersDF)
+    # i = IdentifiersDF('01/03')
+    # print(i.identifiersDF)
     # x = i.identifiersDF.drop(labels=['Batch'], axis=1)
     # print(x)
     # # f = i.getFirDateByBatchDate()
     # # print(i.combineCaseDetailsWithFIRDate())
 
 
-    # c = CoCDF(123456)e
+    c = CoCDF(121212)
+    print(c.cocDF)
+    print(c.cocDF.empty)
+    print(c.getCOCdateString('ComparisonCompDate'))
+    # # print(c.getCOCdateString('BalScanStartDate'))
+    # bsDate = c.getCOCdate("BalScanStartDate")
+    # print('bsDate')
+    # print(bsDate)
+    # # print(isinstance(bsDate, datetime))
     # print(type(c.getCOCdate("BalScanStartDate")))
     # print(type(c.getCOCdate("frmGRLDate")))
     # print(c.getCOCdate("BalScanStartDate"))
