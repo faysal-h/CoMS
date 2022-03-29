@@ -67,8 +67,8 @@ class IdentifiersDocument():
     def saveDoc(self, saveLocation, IdentifiersORevnelops='Identifiers'):
 
         self.document.save(saveLocation)
+        return saveLocation
         logging.info(f"Identififers file saved in {saveLocation}")
-
 
     def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, firDate, ps, district):
         id = self.document.add_paragraph("", style="Bold16")
@@ -79,7 +79,8 @@ class IdentifiersDocument():
         id.add_run(f'Case No 2:\t{caseNo2}\n').font.size = Pt(11)
         id.add_run(f'Parcels:\t{parcels}\n').font.size = Pt(11)
         id.add_run(f'FIR:\t\t{fir} ({firDate})\n').font.size = Pt(11)
-        id.add_run(f'PS & Distt:\t{ps}, {district}\n').font.size = Pt(11)
+        id.add_run(f'PS: \t\t{ps}\n').font.size = Pt(11)
+        id.add_run(f'District:\t{district}\n').font.size = Pt(11)
         id.add_run('').font.size = Pt(11)
 
     def addEnvelopsIdentifiers(self, caseNo1, AddressTo, district):
