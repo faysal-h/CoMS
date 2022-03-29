@@ -1,6 +1,7 @@
 import os
 import logging
 from datetime import datetime
+from dateutil.parser import parse
 
 import pandas as pd
 import pyodbc
@@ -180,10 +181,10 @@ class ParcelsDF(DataFrames):
 
 class IdentifiersDF(DataFrames):
 
-    def __init__(self, BatchDate="", ftmNo="") -> None:
+    def __init__(self, BatchDate, ftmNo="") -> None:
         super().__init__(ftmNo)
         self.BatchDate = BatchDate
-        if not (self.BatchDate) == "":
+        if not (self.BatchDate) == parse(BatchDate, fuzzy=False, dayfirst=True):
             self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiersDate)
         else:
             self.identifiersDF = self.getTableByFtmNo(queryCaseDetailsForIdentifiersFtm)
@@ -218,12 +219,12 @@ if __name__ == "__main__":
     # print(d.caseDetailsDF)
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
-    p = ParcelsDF(123456)
+    # p = ParcelsDF(123456)
 
-    print(p.getParcelDetailsForReport())
+    # print(p.getParcelDetailsForReport())
 
-    # i = IdentifiersDF(ftmNo=123456)
-    # print(i.identifiersDF.dtypes)
+    i = IdentifiersDF('28/02')
+    print(i.identifiersDF)
     # x = i.identifiersDF.drop(labels=['Batch'], axis=1)
     # print(x)
     # # f = i.getFirDateByBatchDate()
