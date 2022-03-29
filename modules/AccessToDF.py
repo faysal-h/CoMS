@@ -1,10 +1,13 @@
 import os
 import logging
+import urllib
 from datetime import datetime
 from dateutil.parser import parse
 
 import pyodbc
 import pandas as pd
+from sqlalchemy import create_engine
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -57,28 +60,29 @@ class AccessFile():
 
     def openConnection(self):
         try:
-            conn_str = (
-                r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-                f'DBQ={dbPath};'
-                )
-
-            self.cnxn = pyodbc.connect(conn_str)
-            self.crsr = self.cnxn.cursor()
+            connection_string = (
+                                r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+                                f"DBQ={dbPath};"
+                                r"ExtendedAnsiSQL=1;"
+                                )
+            connection_uri = f"access+pyodbc:///?odbc_connect={urllib.parse.quote_plus(connection_string)}"
+            self.engine = create_engine(connection_uri)
+        
             logging.info('Connection to Database Established.')
+        
         except ValueError as e:
             logging.error(f"connection to database is not established.\n Error is : {e}")
 
-    def closeConnection(self):
-        self.cnxn.close()
+    # def closeConnection(self):
+    #     self.cnxn.close()
 
     def readQuery(self, Query):
-        df = pd.read_sql_query(Query, self.cnxn)
+        df = pd.read_sql_query(Query, self.engine)
         if(df.empty):
             logging.error("Reading Query Failure. No data found against this case number.")
             return df
         else:
             logging.info("Reading Query Success. Data found against this case number.")
-            self.closeConnection()
             return df
 
 
