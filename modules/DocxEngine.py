@@ -57,6 +57,7 @@ class IdentifiersProcessor():
 
         i.saveDoc(os.path.join(self.currentWeekPath, f"Identifiers.docx"))
 
+
     def EnvelopsMaker(self):
         i = IdentifiersDocument()
         i.PageLayout('A4')
@@ -72,6 +73,7 @@ class IdentifiersProcessor():
             i.addEnvelopsIdentifiers(caseNo1=caseNoFull, AddressTo=envelop[4],district=str(envelop[9]) )
 
         i.saveDoc(os.path.join(self.currentWeekPath, "Envelops.docx"))
+        os.system(f"start {self.currentWeekPath}")
 
 
 class Sheets():

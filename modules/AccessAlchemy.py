@@ -1,4 +1,3 @@
-from operator import itemgetter
 import os
 import urllib
 import pandas as pd
