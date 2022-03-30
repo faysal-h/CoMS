@@ -136,12 +136,16 @@ class CoCDF(DataFrames):
     
     def getCOCdate(self, whichTypeOfDate) -> datetime:
 
-        x = self.cocDF.iloc[0][whichTypeOfDate]
-
-        if(pd.isnull(x)):
+        if(self.cocDF.empty):
             return ""
         else:
-            return self.cocDF.iloc[0][whichTypeOfDate].to_pydatetime()
+            x = self.cocDF.iloc[0][whichTypeOfDate]
+
+            if(pd.isnull(x)):
+                return ""
+            else:
+                return self.cocDF.iloc[0][whichTypeOfDate].to_pydatetime()
+
 
     def getCOCdateString(self, whichTypeOfDate : str) -> str:
         dateToReturn = self.getCOCdate( whichTypeOfDate)
