@@ -4,10 +4,11 @@ import urllib
 from datetime import datetime
 from dateutil.parser import parse
 
-import pyodbc
-import pandas as pd
 from sqlalchemy import create_engine
+import sqlalchemy_access as sa_a
+import sqlalchemy_access.pyodbc as sa_a_pyodbc
 
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO)
 
