@@ -91,7 +91,7 @@ class Sheets():
         # These variables will be used in all worksheets
         self.fullCaseNumber = self.fullCaseNumber()
         self.caseNumberParts = self.caseDetailsDF.getCaseNoParts()
-        self.AdditionalCaseNumbers = self.caseDetailsDF.getValuefrmCaseDetails(columnName="CaseNosAddl")
+        self.AdditionalCaseNumbers = self.secondCaseNoReplacer(self.caseDetailsDF.getValuefrmCaseDetails(columnName="CaseNosAddl"))
         self.analyst = self.caseDetailsDF.getValuefrmCaseDetails(columnName="AnalystName")
         self.reviewer = self.caseDetailsDF.getValuefrmCaseDetails(columnName="ReviewerName")
         self.addressee = self.caseDetailsDF.getValuefrmCaseDetails(columnName="Addressee")
@@ -101,6 +101,13 @@ class Sheets():
 
         #path of CASE Folder
         self.currentCaseFolderPath = UserPaths().currentCaseFolder(self.fullCaseNumber)
+
+
+    def secondCaseNoReplacer(self, caseNo2):
+        if(caseNo2 in [None, "", "None"] ):
+            return ""
+        else:
+            return caseNo2
 
     def fullCaseNumber(self) -> str:
         x = self.caseDetailsDF.getCaseNoParts()
@@ -513,9 +520,9 @@ if __name__ == "__main__":
     
 
 
-    i = IdentifiersProcessor("1/3/2022")
-    i.FileIdentifierMaker()
-    i.EnvelopsMaker()
+    # i = IdentifiersProcessor("1/3/2022")
+    # i.FileIdentifierMaker()
+    # i.EnvelopsMaker()
    
     p = ProcessingSheetProcessor(123456)
     print(p.currentCaseFolderPath)

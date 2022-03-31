@@ -170,7 +170,9 @@ class Report():
         firstRowCells = tableCaseDetails.rows[0].cells
         firstRowCells[0].paragraphs[0].add_run('Agency Case#',style='TableHeading')
         firstRowCells[1].paragraphs[0].add_run(f'{caseNo1}', style='SimpleText')
-        if(caseNo2 != None or caseNo2 != "" ):
+        if(caseNo2 in [None, "", "None"] ):
+            pass
+        else:
             firstRowCells[1].paragraphs[0].add_run(f'\n{caseNo2}', style='SimpleText')
         firstRowCells[2].paragraphs[0].add_run('Attention To:', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run(f'{addressee}, {district}.', style='SimpleText')
@@ -245,8 +247,9 @@ class Report():
                 # parcel[4] == FIR
                 # parcel[5] == FIR DATE
                 # parcel[12] == PS
-                # parcel[1] == DISTRICT
-                newRowCells[2].paragraphs[0].add_run(f'{parcel[4]} ({parcel[5]})'
+                # parcel[13] == DISTRICT
+                firDate = parcel[5][8:]
+                newRowCells[2].paragraphs[0].add_run(f'{parcel[4]}/{firDate},'
                                 f' \n{parcel[12]}, {parcel[13]}', style='SimpleText')
 
                 # ITEM DETAILS CELL
