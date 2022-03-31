@@ -21,6 +21,12 @@ disposition = ( "The case property / evidence may be received by the responsible
                 "Ammunition components should be maintained for possible future examinations."
                 )
 
+listResults = ['The item P1 pistol was examined and found to be in mechanical operating condition.',
+                'The items C1-C7 cartridge cases were identified as having been fired in the item P1 pistol.',
+                'Because of differences in individual characteristics, the items C1-C7 cartridge cases could not have been fired in the item P1 pistol.',
+                 'Because of the lack of sufficient suitable corresponding microscopic markings, it was not possible to identify or eliminate the items C1-C7 cartridge cases as having been fired in the item P1 pistol.']
+
+
 '''
 NOTE There should be a template docx in the folder with the following custom sytles
 BulletCustomNormal , type= Paragraph, bullets enabled
@@ -307,7 +313,7 @@ class Report():
         secondRowCells = tableAnalysis.rows[1].cells
         secondRowCells[0].paragraphs[0].add_run(f'{startDate}')
         secondRowCells[1].paragraphs[0].add_run(f'{endDate}')
-        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Microscopy and ABIS Scanning')
+        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Microscopy, Test Firing and ABIS Scanning')
 
         # adjust column 1 length
         for cell in tableAnalysis.columns[0].cells:
@@ -324,7 +330,7 @@ class Report():
         resultsHeading_format.space_after = Pt(0)
         resultsHeading.add_run('Details of Results and Conclusions Based on Test(s) Performed:').font.size = Pt(11)
 
-        listResults = ['This is the first result.', 'This is the second result.', 'This is the third result.']
+        
         for i in listResults:
             self.document.add_paragraph(f"{i}",style="BulletCustomNormal")
 
