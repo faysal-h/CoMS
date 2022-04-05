@@ -8,7 +8,6 @@ class UserPaths():
 
     def __init__(self) -> None:
         self.CurrentCaseWorkParentFolder = self.checkNcreateCaseWorkDirectory()
-        self.CurrentWeekFolder = self.makeCurrentWeekFolder()
 
     @classmethod
     def checkNcreateFolder(cls, path):
@@ -19,26 +18,20 @@ class UserPaths():
             return path
 
 
-    def currentCaseFolder(self, folderNameToMake:str):
-        currentCaseFolderPath = os.path.join(self.CurrentWeekFolder, folderNameToMake)
-        if os.path.isdir(currentCaseFolderPath):
-            return currentCaseFolderPath
-        else:
-            os.makedirs(currentCaseFolderPath)
-            return currentCaseFolderPath
-
     # CHeck if a CASEWORK folder exist. if None then create a casework directory on desktop
     # and then return the path.
-    def checkNcreateCaseWorkDirectory(self):
+    @classmethod
+    def checkNcreateCaseWorkDirectory(cls):
         if os.path.isdir("E:\Casework") == True:
             return "E:\Casework"
         elif os.path.isdir("D:\Casework") == True:
             return "D:\Casework"
-        elif os.path.isdir(os.path.join(self.userHomePath,"Desktop", "Casework")) == True:
-            return os.path.join(self.userHomePath,"Desktop", "Casework")
+        elif os.path.isdir(os.path.join(cls.userHomePath,"Desktop", "Casework")) == True:
+            return os.path.join(cls.userHomePath,"Desktop", "Casework")
         else:
-            os.makedirs(os.path.join(self.userHomePath,"Desktop", "Casework"))
-            return os.path.join(self.userHomePath,"Desktop", "Casework")
+            os.makedirs(os.path.join(cls.userHomePath,"Desktop", "Casework"))
+            return os.path.join(cls.userHomePath,"Desktop", "Casework")
+
 
     def fileWriteableStateCheck(self, filePath):
         if(os.path.isfile(filePath)):
@@ -56,7 +49,8 @@ class UserPaths():
             print("File does not exist.")
             return "close"
 
-    def week_of_month(self):
+    @classmethod
+    def weekOfCurrentMonth(self):
 
         dt = datetime.datetime.now()
         first_day = dt.replace(day=1)
@@ -66,19 +60,7 @@ class UserPaths():
 
         return "Week" + str(int(ceil(adjusted_dom/7.0)))
 
-    def makeCurrentWeekFolder(self):
-        currentYear = datetime.datetime.now().strftime("%Y")
-        currentMonth = datetime.datetime.now().strftime("%B")
-        currentWeek = self.week_of_month()
-
-        currentWeekFolder = os.path.join(self.CurrentCaseWorkParentFolder, currentYear, currentMonth, currentWeek)
-
-        if os.path.isdir(currentWeekFolder):
-            return currentWeekFolder
-        else:
-            os.makedirs(currentWeekFolder)
-            return currentWeekFolder
-
+    
     def makeFolderfrmDate(self, date: datetime):
         ''' This method creates folder from batch date in casework directory
             and returns path in string format of current batch date.'''
@@ -88,20 +70,16 @@ class UserPaths():
 
         currentBatchFolder = os.path.join(self.CurrentCaseWorkParentFolder, currentYear, currentMonth, batchDate)
 
-        if os.path.isdir(currentBatchFolder):
-            return currentBatchFolder
-        else:
-            os.makedirs(currentBatchFolder)
-            return currentBatchFolder
+        return self.checkNcreateFolder(currentBatchFolder)
 
-    def makeCaseFolderInCurrentBatch(self, path:str, caseNo: str):
+    @classmethod
+    def makeFolderInPath(cls, path:str, caseNo: str):
         caseFolder = os.path.join(path, caseNo)
-        return self.checkNcreateFolder(caseFolder)
+        return cls.checkNcreateFolder(caseFolder)
 
 
 if __name__ == "__main__":
     path = UserPaths()
     print(path.CurrentCaseWorkParentFolder)
     path.fileWriteableStateCheck("C:\\Users\\Faisal\\Desktop\\Casework\\123456-1-firearms.docx")
-    print('Test')
-    print(path.CurrentWeekFolder)
+
