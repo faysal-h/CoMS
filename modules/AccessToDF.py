@@ -20,7 +20,7 @@ customDateFormat = "%d.%m.%Y"
 
 queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], CaseDetails.[caseFTM], CaseDetails.[CaseNosAddl],
                         CaseDetails.[NoOfParcels], CaseDetails.[AnalystName], CaseDetails.[ReviewerName], CaseDetails.[TestsRequest], 
-                        CaseDetails.[Balscanner], CaseDetails.[TeamMember], CaseDetails.[Addressee]
+                        CaseDetails.[Balscanner], CaseDetails.[TeamMember], CaseDetails.[Addressee], CaseDetails.[Batch]
                         FROM CaseDetails
                         WHERE (((CaseDetails.[caseFTM])=
                         '''
@@ -126,6 +126,9 @@ class CaseDetailsDF(DataFrames):
 
     def getValuefrmCaseDetails(self, columnName, indexNumber=0) -> str:
         return self.caseDetailsDF.iloc[indexNumber][columnName]
+    
+    def getBatchDate(self) -> datetime:
+        return self.caseDetailsDF.iloc[0]['Batch'].to_pydatetime()
         
 
 class CoCDF(DataFrames):
@@ -231,8 +234,8 @@ class IdentifiersDF(DataFrames):
 
 if __name__ == "__main__":
 
-    # d = CaseDetailsDF(123456)
-    # print(d.caseDetailsDF)
+    d = CaseDetailsDF(123456)
+    print(type(d.getBatchDate()))
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
     # p = ParcelsDF(123456)
@@ -247,10 +250,10 @@ if __name__ == "__main__":
     # # print(i.combineCaseDetailsWithFIRDate())
 
 
-    c = CoCDF(121212)
-    print(c.cocDF)
-    print(c.cocDF.empty)
-    print(c.getCOCdateString('ComparisonCompDate'))
+    # c = CoCDF(121212)
+    # print(c.cocDF)
+    # print(c.cocDF.empty)
+    # print(c.getCOCdateString('ComparisonCompDate'))
     # # print(c.getCOCdateString('BalScanStartDate'))
     # bsDate = c.getCOCdate("BalScanStartDate")
     # print('bsDate')
