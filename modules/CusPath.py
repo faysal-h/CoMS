@@ -10,6 +10,14 @@ class UserPaths():
         self.CurrentCaseWorkParentFolder = self.checkNcreateCaseWorkDirectory()
         self.CurrentWeekFolder = self.makeCurrentWeekFolder()
 
+    @classmethod
+    def checkNcreateFolder(cls, path):
+        if os.path.isdir(path):
+            return path
+        else:
+            os.makedirs(path)
+            return path
+
 
     def currentCaseFolder(self, folderNameToMake:str):
         currentCaseFolderPath = os.path.join(self.CurrentWeekFolder, folderNameToMake)
@@ -70,6 +78,26 @@ class UserPaths():
         else:
             os.makedirs(currentWeekFolder)
             return currentWeekFolder
+
+    def makeFolderfrmDate(self, date: datetime):
+        ''' This method creates folder from batch date in casework directory
+            and returns path in string format of current batch date.'''
+        currentYear = date.strftime("%Y")
+        currentMonth = date.strftime("%B")
+        batchDate = date.strftime("%d-%m-%Y")
+
+        currentBatchFolder = os.path.join(self.CurrentCaseWorkParentFolder, currentYear, currentMonth, batchDate)
+
+        if os.path.isdir(currentBatchFolder):
+            return currentBatchFolder
+        else:
+            os.makedirs(currentBatchFolder)
+            return currentBatchFolder
+
+    def makeCaseFolderInCurrentBatch(self, path:str, caseNo: str):
+        caseFolder = os.path.join(path, caseNo)
+        return self.checkNcreateFolder(caseFolder)
+
 
 if __name__ == "__main__":
     path = UserPaths()

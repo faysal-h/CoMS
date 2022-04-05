@@ -4,6 +4,7 @@ import os
 
 import inflect
 from docxtpl import DocxTemplate
+
 from modules.CusPath import UserPaths
 
 from modules.AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
@@ -28,9 +29,11 @@ class IdentifiersProcessor():
     def __init__(self, batchDate) -> None:
         self.batchDate = batchDate
 
-        self.currentWeekPath = UserPaths().CurrentWeekFolder
         # List of Identifiers from dataframe
         self.Identifiers = IdentifiersDF(self.batchDate).identifiersDF.values.tolist()
+
+        # Creates Folder for each cases in identifiers
+        self.currentBatchFolderPath = self.makeFoldersOfAllCasesInBatch()
         
     def noneToEmptyValue(self, value):
         if(value==None):
@@ -38,6 +41,17 @@ class IdentifiersProcessor():
         else:
             return value
 
+    def makeFoldersOfAllCasesInBatch(self):
+        for identifier in self.Identifiers:
+
+            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
+
+            # Generates Respective case folder
+            batchDate = identifier[0].to_pydatetime()
+            batchFolder = UserPaths().makeFolderfrmDate(date=batchDate)
+            UserPaths().makeCaseFolderInCurrentBatch(batchFolder, caseNo=caseNoFull)
+        
+        return batchFolder
 
     def FileIdentifierMaker(self):
         i = IdentifiersDocument()
@@ -46,17 +60,16 @@ class IdentifiersProcessor():
         i.createTwoColumnsPage()
 
         for identifier in self.Identifiers:
-            print(identifier)
 
             caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
             caseNo2 = self.noneToEmptyValue(identifier[5])
 
+            # generates identifiers for each case
             i.addFileIdentifiers(caseNo1=caseNoFull, caseNo2=str(caseNo2), parcels=str(identifier[10]),
                                 fir=str(identifier[6]), firDate=identifier[7], ps=str(identifier[8]),
                                 district=str(identifier[9]))
 
-        i.saveDoc(os.path.join(self.currentWeekPath, f"Identifiers.docx"))
-
+        i.saveDoc(os.path.join(self.currentBatchFolderPath, f"Identifiers.docx"))
 
     def EnvelopsMaker(self):
         i = IdentifiersDocument()
@@ -65,15 +78,15 @@ class IdentifiersProcessor():
         i.createTwoColumnsPage()
 
         for envelop in self.Identifiers:
-            print(envelop)
+            logging.info(envelop)
 
             caseNoFull = "PFSA" + str(envelop[1]) + "-" + str(envelop[2]) + "-FTM-" + str(envelop[3]) 
 
             # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
             i.addEnvelopsIdentifiers(caseNo1=caseNoFull, AddressTo=envelop[4],district=str(envelop[9]) )
 
-        i.saveDoc(os.path.join(self.currentWeekPath, "Envelops.docx"))
-        os.system(f"start {self.currentWeekPath}")
+        i.saveDoc(os.path.join(self.currentBatchFolderPath, "Envelops.docx"))
+        os.system(f"start {self.currentBatchFolderPath}")
 
 
 class Sheets():
@@ -515,30 +528,39 @@ class ReportProcessor(Sheets):
 
 if __name__ == "__main__":
 
-    r = ReportProcessor(123456)
-    r.reportGenerator()
+    # r = ReportProcessor(123456)
+    # r.reportGenerator()
     
 
 
     # i = IdentifiersProcessor("1/3/2022")
+    # # i.FileIdentifierMaker()
+    # print(i.batchDate)
+    # i.FileIdentifierMaker()
+    # i.EnvelopsMaker()
+
+    s = Sheets(123456)
+    print(s.caseDetailsDF)
+
+
     # i.FileIdentifierMaker()
     # i.EnvelopsMaker()
    
-    p = ProcessingSheetProcessor(123456)
-    print(p.currentCaseFolderPath)
-    print(p.proceesingSheetMaker())
+    # p = ProcessingSheetProcessor(123456)
+    # print(p.currentCaseFolderPath)
+    # print(p.proceesingSheetMaker())
     # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
-    f = FirearmsProcessor(123456)
-    print(f.currentCaseFolderPath)
-    print(f.firearmSheetMaker())
+    # f = FirearmsProcessor(123456)
+    # print(f.currentCaseFolderPath)
+    # print(f.firearmSheetMaker())
 
-    c = CartridgeProcessor(123456)
+    # c = CartridgeProcessor(123456)
     # print(c.cartridges)
-    c.cartridgeSheetMaker()
+    # c.cartridgeSheetMaker()
 
-    b = BulletProcessor(123456)
-    b.bulletSheetMaker()
+    # b = BulletProcessor(123456)
+    # b.bulletSheetMaker()
 
     # print(UserPaths().checkNcreateCaseWorkDirectory())
-    os.system(f"start {r.currentCaseFolderPath}")
+    # os.system(f"start {r.currentCaseFolderPath}")
