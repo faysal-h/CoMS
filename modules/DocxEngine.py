@@ -49,7 +49,7 @@ class IdentifiersProcessor():
             # Generates Respective case folder
             batchDate = identifier[0].to_pydatetime()
             batchFolder = UserPaths().makeFolderfrmDate(date=batchDate)
-            UserPaths().makeCaseFolderInCurrentBatch(batchFolder, caseNo=caseNoFull)
+            UserPaths().makeFolderInPath(batchFolder, caseNo=caseNoFull)
         
         return batchFolder
 
@@ -113,10 +113,14 @@ class Sheets():
         self.toCPRdate = self.CoCDF.getCOCdateString('toCPRDate')
 
         #path of CASE Folder
-        self.currentCaseFolderPath = UserPaths().currentCaseFolder(self.fullCaseNumber)
+
+        self.batchDate = self.caseDetailsDF.getBatchDate()
+        self.batchFolderPath = UserPaths().makeFolderfrmDate(self.batchDate)
+        self.currentCaseFolderPath = UserPaths.makeFolderInPath(self.batchFolderPath, self.fullCaseNumber)
 
 
     def secondCaseNoReplacer(self, caseNo2):
+        '''This method replaces None case number with empty string'''
         if(caseNo2 in [None, "", "None"] ):
             return ""
         else:
@@ -128,7 +132,6 @@ class Sheets():
 
     def numberToWord(self, digit):
         iE = inflect.engine()
-        
 
         return iE.number_to_words(digit)
 
@@ -541,6 +544,9 @@ if __name__ == "__main__":
 
     s = Sheets(123456)
     print(s.caseDetailsDF)
+    print(s.batchFolderPath)
+    print(s.currentCaseFolderPath)
+
 
 
     # i.FileIdentifierMaker()
