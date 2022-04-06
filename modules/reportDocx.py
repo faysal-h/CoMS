@@ -224,20 +224,18 @@ class Report():
             # converts quantity of items from digits to words
             quantityInWords = inflect.engine().number_to_words(parcel[10])
 
-
-            #  NOTE parcels[i-1][0] Previous Parcel Number.
-            #  As -1 points to last item of list, so this also works for first Parcel of list
-            if(parcel[0]!=parcels[i-1][0]):
-                
+            if(i==0):
+                # for first entry in list of parcels first row must be created otherwise it will be added to heading
                 accused = ""
                 if(parcel[14] not in [None, '']):
                     accused = f"\n(said to be recovered from the accused {parcel[14]})"
 
                 # Adds new row to the table if PARCEL IS NEW
                 newRowCells = tableEVDetails.add_row().cells
+
+                # set alignment of each cell to top in Row
                 for cell in newRowCells:
                     cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
-
 
                 # newRowCells = tableEVDetails.rows[i+1+d].cells
                 # Parcel NUMBER CELL parcel[0] == PARCEL NO
@@ -267,10 +265,54 @@ class Report():
                                 f'(Items {parcel[9]}{testFires}){accused}', style='SimpleText')
 
             else:
-                # move to last row of table
-                previousRowCells = tableEVDetails.rows[-1].cells
+                #  NOTE parcels[i-1][0] Previous Parcel Number.
+                #  As -1 points to last item of list, so this also works for first Parcel of list
+                if(parcel[0] != parcels[i-1][0]):
+                    
+                    accused = ""
+                    if(parcel[14] not in [None, '']):
+                        accused = f"\n(said to be recovered from the accused {parcel[14]})"
 
-                previousRowCells[3].paragraphs[0].add_run(f' and {quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})', style='SimpleText')
+                    # Adds new row to the table if PARCEL IS NEW
+                    newRowCells = tableEVDetails.add_row().cells
+
+                    # set alignment of each cell to top in Row
+                    for cell in newRowCells:
+                        cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+
+                    # newRowCells = tableEVDetails.rows[i+1+d].cells
+                    # Parcel NUMBER CELL parcel[0] == PARCEL NO
+                    newRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
+                    
+                    # SUBMITTER CELL
+                    # parcel[1] == SUBMISSION DATE
+                    # parcel[2] == SUBMITTER NAME
+                    # parcel[3] == SUBMITTER RANK
+                    newRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
+                    
+                    # FIR & PS CELL
+                    # parcel[4] == FIR
+                    # parcel[5] == FIR DATE
+                    # parcel[12] == PS
+                    # parcel[13] == DISTRICT
+                    firDate = parcel[5][8:]
+                    newRowCells[2].paragraphs[0].add_run(f'{parcel[4]}/{firDate},'
+                                    f' \n{parcel[12]}, {parcel[13]}', style='SimpleText')
+
+                    # ITEM DETAILS CELL
+                    # parcel[6] == CALIBER
+                    # parcel[7] == ITEM DETAILS likE CARTRIDGE CASE OR PISTOL
+                    # parcel[9] == ITEMS NUMBERS
+                    testFires = self.testFiresStatementFromItemNo(EvType=parcel[7], itemNo=parcel[9])
+                    newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} '
+                                    f'(Items {parcel[9]}{testFires}){accused}', style='SimpleText')
+
+                else:
+                    # move to last row of table
+                    previousRowCells = tableEVDetails.rows[-1].cells
+
+                    previousRowCells[3].paragraphs[0].add_run(f' and {quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})',
+                                                            style='SimpleText')
 
         # Column 1 PARCEL NO WIDTH
         for cell in tableEVDetails.columns[0].cells:
@@ -287,7 +329,6 @@ class Report():
         # Column 4 WIDTH
         for cell in tableEVDetails.columns[3].cells:
             cell.width = Mm(90)
-
 
         #This is to seprate next table from this one
         self.document.add_paragraph('', style='CompactParagraph')
@@ -313,7 +354,8 @@ class Report():
         secondRowCells = tableAnalysis.rows[1].cells
         secondRowCells[0].paragraphs[0].add_run(f'{startDate}')
         secondRowCells[1].paragraphs[0].add_run(f'{endDate}')
-        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Microscopy, Test Firing and ABIS Scanning')
+        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Microscopy, Test Firing and ABIS Scanning',
+                                                style='SimpleText')
 
         # adjust column 1 length
         for cell in tableAnalysis.columns[0].cells:
