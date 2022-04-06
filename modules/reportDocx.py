@@ -201,7 +201,7 @@ class Report():
         evidenceDetailsHeading.underline = True
         
         EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
-        EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         EVdescriptionParagraph.add_run(f"""The following evidence {wasORwere} submitted along with the request of {Addressee} for """, style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.\n").bold =True
 
