@@ -107,6 +107,7 @@ class menu():
     def generateIdentifiers(self, batchDate):        
         DocxEngine.IdentifiersProcessor(batchDate).FileIdentifierMaker()
         DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
+        DocxEngine.CPRProcessor(batchDate).FileCPRMaker()
 
 if __name__ == "__main__":
     menu().run()

@@ -11,6 +11,7 @@ from modules.AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
 from modules.AccessToDF import IdentifiersDF
 
 from modules.identifierDocx import IdentifiersDocument
+from modules.CPRDocx import CPRDocument
 from modules.reportDocx import Report
 
 processingTemplatePath = os.path.join(os.getcwd(), "modules\\templates\\processing.docx")
@@ -34,7 +35,14 @@ class IdentifiersProcessor():
 
         # Creates Folder for each cases in identifiers
         self.currentBatchFolderPath = self.makeFoldersOfAllCasesInBatch()
-        
+
+        # BatchDate in string format
+        self.fileNameEnder = self.batchDateToString()
+
+    def batchDateToString(self) -> str:
+        return ''.join(ch for ch in str(self.batchDate) if ch.isalnum())
+
+
     def noneToEmptyValue(self, value):
         if(value==None):
             return ""
@@ -69,7 +77,7 @@ class IdentifiersProcessor():
                                 fir=str(identifier[6]), firDate=identifier[7], ps=str(identifier[8]),
                                 district=str(identifier[9]))
 
-        i.saveDoc(os.path.join(self.currentBatchFolderPath, f"Identifiers.docx"))
+        i.saveDoc(os.path.join(self.currentBatchFolderPath, f"Identifiers-{self.fileNameEnder}.docx"))
 
     def EnvelopsMaker(self):
         i = IdentifiersDocument()
@@ -85,9 +93,27 @@ class IdentifiersProcessor():
             # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
             i.addEnvelopsIdentifiers(caseNo1=caseNoFull, AddressTo=envelop[4],district=str(envelop[9]) )
 
-        i.saveDoc(os.path.join(self.currentBatchFolderPath, "Envelops.docx"))
+        i.saveDoc(os.path.join(self.currentBatchFolderPath, f"Envelops-{self.fileNameEnder}.docx"))
         os.system(f"start {self.currentBatchFolderPath}")
 
+class CPRProcessor(IdentifiersProcessor):
+    def __init__(self, batchDate) -> None:
+        super().__init__(batchDate)
+
+    def FileCPRMaker(self):
+        cpr = CPRDocument()
+
+        for i, identifier in enumerate(self.Identifiers, start=1):
+
+            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
+            
+            # generates identifiers for each case
+            cpr.addRowInMainTable(Serial=str(i), CaseNo=caseNoFull, FIR=str(identifier[6]),
+                                 FIRDate=identifier[7], PS=str(identifier[8]),
+                                District=str(identifier[9]))
+
+        cpr.save(os.path.join(self.currentBatchFolderPath, f"CPR-{self.fileNameEnder}.docx"))
+    
 
 class Sheets():
 
@@ -534,6 +560,8 @@ if __name__ == "__main__":
     # r = ReportProcessor(123456)
     # r.reportGenerator()
     
+    cpr = CPRProcessor('28/02/2022')
+    cpr.FileCPRMaker()
 
 
     # i = IdentifiersProcessor("1/3/2022")
@@ -542,10 +570,10 @@ if __name__ == "__main__":
     # i.FileIdentifierMaker()
     # i.EnvelopsMaker()
 
-    s = Sheets(123456)
-    print(s.caseDetailsDF)
-    print(s.batchFolderPath)
-    print(s.currentCaseFolderPath)
+    # s = Sheets(123456)
+    # print(s.caseDetailsDF)
+    # print(s.batchFolderPath)
+    # print(s.currentCaseFolderPath)
 
 
 
