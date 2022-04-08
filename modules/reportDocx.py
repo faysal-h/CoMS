@@ -64,6 +64,35 @@ class Report():
             else:
                 return ""
 
+    def addRowInTableEvidenceDetails(self, parcelNumber:int, submissionDate:str,
+                                    submitterName:str, submitterRank:str, fir:str, firDate:str,
+                                    PS:str, District:str, quantityInWords:str, caliber:str, EVDetails:str,
+                                    itemString:str, itemNumbers:str,testFires:str,accused:str ):
+        
+        tableMain = self.document.tables[1]
+
+        newRowCells = tableMain.add_row().cells
+
+        # set alignment of each cell to top in Row
+        for cell in newRowCells:
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+
+        # Parcel NUMBER CELL
+        newRowCells[0].paragraphs[0].add_run(f'{parcelNumber}',style='SimpleText')
+        
+        # SUBMITTER CELL
+        newRowCells[1].paragraphs[0].add_run(f'{submitterName} ({submitterRank}) \n{submissionDate}',
+                                             style='SimpleText')
+        
+        # FIR & PS CELL
+        newRowCells[2].paragraphs[0].add_run(f'{fir}/{firDate[8:]},'
+                        f' \n{PS}, {District}', style='SimpleText')
+
+        # ITEM DETAILS CELL
+        newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {caliber} caliber {EVDetails} '
+                        f'({itemString} {itemNumbers}{testFires}){accused}', style='SimpleText')
+
+
     #NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
     def add_styles(self):
         styles = self.document.styles
@@ -207,7 +236,8 @@ class Report():
         
         EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        EVdescriptionParagraph.add_run(f"""The following sealed evidence {wasORwere} submitted along with the request of {Addressee} for """, style='SimpleText')
+        EVdescriptionParagraph.add_run(f"""The following sealed evidence {wasORwere} submitted along with the request of {Addressee} for """,
+                                         style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.\n").bold =True
 
     #CREATE TABLE OF EVIDENCE INFORMATION
@@ -235,83 +265,29 @@ class Report():
 
             if(i==0):
                 # for first entry in list of parcels first row must be created otherwise it will be added to heading
-
-                # Adds new row to the table if PARCEL IS NEW
-                newRowCells = tableEVDetails.add_row().cells
-
-                # set alignment of each cell to top in Row
-                for cell in newRowCells:
-                    cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
-
-                # Parcel NUMBER CELL
-                newRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
-                
-                # SUBMITTER CELL
-                # parcel[1] == SUBMISSION DATE
-                # parcel[2] == SUBMITTER NAME
-                # parcel[3] == SUBMITTER RANK
-                newRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
-                
-                # FIR & PS CELL
-                # parcel[4] == FIR
-                # parcel[5] == FIR DATE
-                # parcel[12] == PS
-                # parcel[13] == DISTRICT
-                firDate = parcel[5][8:]
-                newRowCells[2].paragraphs[0].add_run(f'{parcel[4]}/{firDate},'
-                                f' \n{parcel[12]}, {parcel[13]}', style='SimpleText')
-
-                # ITEM DETAILS CELL
-                # parcel[6] == CALIBER
-                # parcel[7] == ITEM DETAILS likE CARTRIDGE CASE OR PISTOL
-                # parcel[9] == ITEMS NUMBERS
-
-                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} caliber {parcel[8]} '
-                                f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
+                self.addRowInTableEvidenceDetails(parcelNumber=parcel[0], submissionDate=parcel[1],
+                                    submitterName=parcel[2], submitterRank=parcel[3], fir=parcel[4],
+                                    firDate=parcel[5], PS=parcel[12], District=parcel[13], quantityInWords=quantityInWords,
+                                    caliber=parcel[6], EVDetails=parcel[8], itemString=itemsOrItems,
+                                    itemNumbers=parcel[9], testFires=testFires , accused=accused)
 
             else:
                 #  NOTE parcels[i-1][0] Previous Parcel Number.
                 #  As -1 points to last item of list, so this also works for first Parcel of list
                 if(parcel[0] != parcels[i-1][0]):
                     
-                    # Adds new row to the table if PARCEL IS NEW
-                    newRowCells = tableEVDetails.add_row().cells
-
-                    # set alignment of each cell to top in Row
-                    for cell in newRowCells:
-                        cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
-
-                    # newRowCells = tableEVDetails.rows[i+1+d].cells
-                    # Parcel NUMBER CELL parcel[0] == PARCEL NO
-                    newRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
-                    
-                    # SUBMITTER CELL
-                    # parcel[1] == SUBMISSION DATE
-                    # parcel[2] == SUBMITTER NAME
-                    # parcel[3] == SUBMITTER RANK
-                    newRowCells[1].paragraphs[0].add_run(f'{parcel[2]} ({parcel[3]}) \n{parcel[1]}', style='SimpleText')
-                    
-                    # FIR & PS CELL
-                    # parcel[4] == FIR
-                    # parcel[5] == FIR DATE
-                    # parcel[12] == PS
-                    # parcel[13] == DISTRICT
-                    firDate = parcel[5][8:]
-                    newRowCells[2].paragraphs[0].add_run(f'{parcel[4]}/{firDate},'
-                                    f' \n{parcel[12]}, {parcel[13]}', style='SimpleText')
-
-                    # ITEM DETAILS CELL
-                    # parcel[6] == CALIBER
-                    # parcel[7] == ITEM DETAILS likE CARTRIDGE CASE OR PISTOL
-                    # parcel[9] == ITEMS NUMBERS
-                    newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} caliber {parcel[8]} '
-                                    f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
+                    # for first entry in list of parcels first row must be created otherwise it will be added to heading
+                    self.addRowInTableEvidenceDetails(parcelNumber=parcel[0], submissionDate=parcel[1],
+                                        submitterName=parcel[2], submitterRank=parcel[3], fir=parcel[4],
+                                        firDate=parcel[5], PS=parcel[12], District=parcel[13], quantityInWords=quantityInWords,
+                                        caliber=parcel[6], EVDetails=parcel[8], itemString=itemsOrItems,
+                                        itemNumbers=parcel[9], testFires=testFires , accused=accused)
 
                 else:
                     # move to last row of table
                     previousRowCells = tableEVDetails.rows[-1].cells
 
-                    previousRowCells[3].paragraphs[0].add_run(f'and {quantityInWords} {parcel[6]} caliber {parcel[8]} '
+                    previousRowCells[3].paragraphs[0].add_run(f' and {quantityInWords} {parcel[6]} caliber {parcel[8]} '
                                     f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
 
         # Column 1 PARCEL NO WIDTH
@@ -320,11 +296,11 @@ class Report():
 
         # Column 2 WIDTH
         for cell in tableEVDetails.columns[1].cells:
-            cell.width = Mm(30)
+            cell.width = Mm(35)
         
         # Column 4 WIDTH
         for cell in tableEVDetails.columns[2].cells:
-            cell.width = Mm(40)
+            cell.width = Mm(35)
 
         # Column 4 WIDTH
         for cell in tableEVDetails.columns[3].cells:
