@@ -314,7 +314,7 @@ class ProcessingSheetProcessor(Sheets):
                         'P1': "CaseWork",            # PURPOSE COLUMN
                         'P2': "Comparison",
                         'P3': "Comparison Done",
-                        'P4': "Case DOne",
+                        'P4': "Case Done",
                         'P5': "",
                         'P6': "",
                     }
@@ -423,11 +423,32 @@ class FirearmsProcessor(Sheets):
         # Create instance of DOCX TEMPLATE
         self.firearmsDocTemplate = DocxTemplate(firearmsTemplatePath)
 
+    def testFiresFromItemNo(self, itemNo: str) -> str:
+        itemsToCheck = {
+                        'R': f'{itemNo}TC1 & {itemNo}TC2',
+                        'P': f'{itemNo}TC1 & {itemNo}TC2',
+                        'S': f'{itemNo}TS1 & {itemNo}TS2',
+                        'M': f'{itemNo}TC1 & {itemNo}TC2',
+                        }
+        logging.info(f"Item No is {itemNo}")
+
+        if itemNo == None or "":
+            return ""
+        else:
+            itemNo = itemNo.upper()
+            # loops through dictionary to find respective item test fires names
+            for key in itemsToCheck:
+                if(itemNo.find(key) != -1):
+                    logging.info(f"Test fires from firearm {itemsToCheck[key]}")
+                    return itemsToCheck[key]
+
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
     def firearmSheetMaker(self):
         if len(self.firearms) > 0: 
             for firearm in self.firearms:
+
+                testFires = self.testFiresFromItemNo(firearm[4])
                 yearShort = str(self.caseNumberParts[0])
 
                 context =   {   
@@ -441,6 +462,7 @@ class FirearmsProcessor(Sheets):
                                 'FTMNO' : self.caseNumberParts[2],
                                 'MARKING': str(firearm[4])+"/"+str(self.caseNumberParts[2])+"/"+yearShort[2:],
                                 'ABIS': self.BalscanDate,
+                                'TESTFIRES': testFires
                             }
 
                 self.firearmsDocTemplate.render(context)
@@ -560,8 +582,8 @@ if __name__ == "__main__":
     # r = ReportProcessor(123456)
     # r.reportGenerator()
     
-    cpr = CPRProcessor('28/02/2022')
-    cpr.FileCPRMaker()
+    # cpr = CPRProcessor('28/02/2022')
+    # cpr.FileCPRMaker()
 
 
     # i = IdentifiersProcessor("1/3/2022")
@@ -585,9 +607,9 @@ if __name__ == "__main__":
     # print(p.proceesingSheetMaker())
     # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
-    # f = FirearmsProcessor(123456)
-    # print(f.currentCaseFolderPath)
-    # print(f.firearmSheetMaker())
+    f = FirearmsProcessor(123456)
+    print(f.currentCaseFolderPath)
+    print(f.firearmSheetMaker())
 
     # c = CartridgeProcessor(123456)
     # print(c.cartridges)

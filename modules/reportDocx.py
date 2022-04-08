@@ -201,7 +201,7 @@ class Report():
         
         EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        EVdescriptionParagraph.add_run(f"""The following evidence {wasORwere} submitted along with the request of {Addressee} for """, style='SimpleText')
+        EVdescriptionParagraph.add_run(f"""The following sealed evidence {wasORwere} submitted along with the request of {Addressee} for """, style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.\n").bold =True
 
     #CREATE TABLE OF EVIDENCE INFORMATION
@@ -353,7 +353,7 @@ class Report():
         secondRowCells = tableAnalysis.rows[1].cells
         secondRowCells[0].paragraphs[0].add_run(f'{startDate}')
         secondRowCells[1].paragraphs[0].add_run(f'{endDate}')
-        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Microscopy, Test Firing and ABIS Scanning',
+        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Comparison Microscopy, Test Firing and ABIS Scanning',
                                                 style='SimpleText')
 
         # adjust column 1 length
