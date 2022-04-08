@@ -57,7 +57,13 @@ class Report():
                         return itemsToCheck[key]
             else:
                 return ""
-        
+    
+    def accusedStatementfrmName(self, accusedName):
+            if(accusedName not in [None, '']):
+                return f"\n(said to be recovered from the accused {accusedName})"
+            else:
+                return ""
+
     #NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
     def add_styles(self):
         styles = self.document.styles
@@ -220,14 +226,15 @@ class Report():
         
         for i, parcel in enumerate(parcels, start=0):
 
-            # converts quantity of items from digits to words
+            # converts quantity of items from digits to words and other variables to statements
             quantityInWords = inflect.engine().number_to_words(parcel[10])
+            accused = self.accusedStatementfrmName(parcel[14])
+            testFires = self.testFiresStatementFromItemNo(EvType=parcel[7], itemNo=parcel[9])
+            itemsOrItems = 'Item' if parcel[10] < 2 else "Items" 
+
 
             if(i==0):
                 # for first entry in list of parcels first row must be created otherwise it will be added to heading
-                accused = ""
-                if(parcel[14] not in [None, '']):
-                    accused = f"\n(said to be recovered from the accused {parcel[14]})"
 
                 # Adds new row to the table if PARCEL IS NEW
                 newRowCells = tableEVDetails.add_row().cells
@@ -236,8 +243,7 @@ class Report():
                 for cell in newRowCells:
                     cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
-                # newRowCells = tableEVDetails.rows[i+1+d].cells
-                # Parcel NUMBER CELL parcel[0] == PARCEL NO
+                # Parcel NUMBER CELL
                 newRowCells[0].paragraphs[0].add_run(f'{parcel[0]}',style='SimpleText')
                 
                 # SUBMITTER CELL
@@ -259,19 +265,15 @@ class Report():
                 # parcel[6] == CALIBER
                 # parcel[7] == ITEM DETAILS likE CARTRIDGE CASE OR PISTOL
                 # parcel[9] == ITEMS NUMBERS
-                testFires = self.testFiresStatementFromItemNo(EvType=parcel[7], itemNo=parcel[9])
-                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} '
-                                f'(Items {parcel[9]}{testFires}){accused}', style='SimpleText')
+
+                newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} caliber {parcel[8]} '
+                                f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
 
             else:
                 #  NOTE parcels[i-1][0] Previous Parcel Number.
                 #  As -1 points to last item of list, so this also works for first Parcel of list
                 if(parcel[0] != parcels[i-1][0]):
                     
-                    accused = ""
-                    if(parcel[14] not in [None, '']):
-                        accused = f"\n(said to be recovered from the accused {parcel[14]})"
-
                     # Adds new row to the table if PARCEL IS NEW
                     newRowCells = tableEVDetails.add_row().cells
 
@@ -302,16 +304,15 @@ class Report():
                     # parcel[6] == CALIBER
                     # parcel[7] == ITEM DETAILS likE CARTRIDGE CASE OR PISTOL
                     # parcel[9] == ITEMS NUMBERS
-                    testFires = self.testFiresStatementFromItemNo(EvType=parcel[7], itemNo=parcel[9])
-                    newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} {parcel[8]} '
-                                    f'(Items {parcel[9]}{testFires}){accused}', style='SimpleText')
+                    newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {parcel[6]} caliber {parcel[8]} '
+                                    f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
 
                 else:
                     # move to last row of table
                     previousRowCells = tableEVDetails.rows[-1].cells
 
-                    previousRowCells[3].paragraphs[0].add_run(f' and {quantityInWords} {parcel[6]} {parcel[8]} (Items {parcel[9]})',
-                                                            style='SimpleText')
+                    previousRowCells[3].paragraphs[0].add_run(f'and {quantityInWords} {parcel[6]} caliber {parcel[8]} '
+                                    f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
 
         # Column 1 PARCEL NO WIDTH
         for cell in tableEVDetails.columns[0].cells:
