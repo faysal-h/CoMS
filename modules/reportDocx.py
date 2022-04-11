@@ -217,7 +217,7 @@ class Report():
         firstRowCells[2].paragraphs[0].add_run('Attention To:', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run(f'{addressee}, {district}.', style='SimpleText')
 
-    def paraEvDetail(self, Addressee, items, testRequest):
+    def paraEvDetail(self, Addressee, District, items, testRequest):
         if(items>1):
             wasORwere = "items were"
         else:
@@ -236,7 +236,8 @@ class Report():
         
         EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        EVdescriptionParagraph.add_run(f"""The following sealed evidence {wasORwere} submitted along with the request of {Addressee} for """,
+        EVdescriptionParagraph.add_run(f"The following sealed evidence {wasORwere}"
+                                        f" submitted along with the request of {Addressee}, {District} for ",
                                          style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.\n").bold =True
 

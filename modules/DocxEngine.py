@@ -545,7 +545,6 @@ class ReportProcessor(Sheets):
         self.parcels = self.ParcelsDF.getParcelDetailsForReport()
 
 
-
     def reportGenerator(self):
         
 
@@ -558,7 +557,10 @@ class ReportProcessor(Sheets):
         testReport.tableCaseDetails(caseNo1= self.fullCaseNumber, caseNo2=self.AdditionalCaseNumbers, 
                                         addressee=self.addressee, district=self.district)
 
-        testReport.paraEvDetail(Addressee= self.addressee, items=self.numberOfParcels, testRequest=self.testStatement)
+        testReport.paraEvDetail(Addressee= self.addressee,
+                                items=self.numberOfParcels,
+                                District=self.district,
+                                testRequest=self.testStatement)
         
         testReport.tableEvDetails(self.parcels)
 
