@@ -1,6 +1,6 @@
 
-import logging
 import os
+import logging
 
 import inflect
 from docxtpl import DocxTemplate
@@ -540,9 +540,65 @@ class ReportProcessor(Sheets):
 
         self.numberOfParcels = self.ParcelsDF.getNoOfParcels()
         self.district = self.ParcelsDF.getValuefrmParcels('District', indexNumber=0)
-        self.testStatement = self.caseDetailsDF.getValuefrmCaseDetails(columnName="TestsRequest")
+        # self.testStatement = self.caseDetailsDF.getValuefrmCaseDetails(columnName="TestsRequest")
 
         self.parcels = self.ParcelsDF.getParcelDetailsForReport()
+
+        # it should come after self.parcels
+        self.testStatement = self.testRequestHeading()
+
+    def testRequestHeading(self):
+        # As set cannot contains duplicate value
+        cc = 0
+        ss = 0
+        firearm = 0
+
+
+        # Finds and adds Cartridge case and shotshell case
+        # Also sets Functionlity Testin True if firearm is present
+        for parcel in self.parcels:
+            if str(parcel[8]).lower().find('cartridge') != -1:
+                cc = cc + parcel[10]
+            elif str(parcel[8]).lower().find('shot') != -1:
+                ss = ss + parcel[10]
+            else:
+                firearm = firearm + 1
+        
+        cartridgeCase = ''
+        # Adds cartridge case in test request statement depending upon number of cartridges
+        if cc > 0:
+            if cc > 1:
+                cartridgeCase = 'Cartridge Cases'
+            else:
+                cartridgeCase = 'Cartridge Case'
+
+        shotShellCase = ''
+        # Adds Shotshell cases in test request statement depending upon number of cartridges
+        if ss > 0:
+            if ss > 1:
+                shotShellCase = 'Shotshell Cases'
+            else:
+                shotShellCase = 'Shotshell Case'
+
+        f = ''
+        if firearm > 1:
+            f = 'Firearms'
+        else:
+            f = 'Firearm'
+
+        And = ''
+        if cc > 0 and ss > 0:
+            And = ' and '
+
+
+        funcTest = ''
+        # Adds functionlity in Test request if firearm is present        
+        if firearm > 1:
+            funcTest = ' and Functionality Testing'
+        else:
+            funcTest = ''
+        
+        return f"Comparison of {cartridgeCase}{And}{shotShellCase} with submitted {f}{funcTest}"
 
 
     def reportGenerator(self):
@@ -581,7 +637,10 @@ class ReportProcessor(Sheets):
 
 if __name__ == "__main__":
 
-    # r = ReportProcessor(123456)
+    r = ReportProcessor(123456)
+    print(r.parcels, end="\n")
+    print(r.testRequestHeading())
+
     # r.reportGenerator()
     
     # cpr = CPRProcessor('28/02/2022')
@@ -609,12 +668,12 @@ if __name__ == "__main__":
     # print(p.proceesingSheetMaker())
     # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
-    f = FirearmsProcessor(123456)
-    print(f.currentCaseFolderPath)
-    print(f.firearmSheetMaker())
+    # f = FirearmsProcessor(123456)
+    # print(f.currentCaseFolderPath)
+    # print(f.firearmSheetMaker())
 
     # c = CartridgeProcessor(123456)
-    # print(c.cartridges)
+    # # print(c.cartridges)
     # c.cartridgeSheetMaker()
 
     # b = BulletProcessor(123456)
