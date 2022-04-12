@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import logging
@@ -93,7 +93,8 @@ class menu():
             batchDate = parse(batchDate, fuzzy=False, dayfirst=True)
             return batchDate.strftime('%d/%m/%Y')
 
-        except ValueError:
+        except ValueError as e:
+            logging.info(e)
             return self.wrongDateWarning()
 
     def generateSheets(self, ftmNumber):
@@ -101,8 +102,8 @@ class menu():
         DocxEngine.FirearmsProcessor(ftmNumber=ftmNumber).firearmSheetMaker()
         DocxEngine.CartridgeProcessor(ftmNumber=ftmNumber).cartridgeSheetMaker()
         DocxEngine.BulletProcessor(ftmNumber=ftmNumber).bulletSheetMaker()
-        saveLocation = DocxEngine.ReportProcessor(ftmNumber=ftmNumber).reportGenerator()
-        pymsgbox.alert(text=f"All sheets are generated.", title="Success")
+        DocxEngine.ReportProcessor(ftmNumber=ftmNumber).reportGenerator()
+        pymsgbox.alert(text=f"All sheets are generated", title="Success")
 
     def generateIdentifiers(self, batchDate):        
         DocxEngine.IdentifiersProcessor(batchDate).FileIdentifierMaker()

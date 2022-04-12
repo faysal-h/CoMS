@@ -214,7 +214,7 @@ class Report():
             pass
         else:
             firstRowCells[1].paragraphs[0].add_run(f'\n{caseNo2}', style='SimpleText')
-        firstRowCells[2].paragraphs[0].add_run('Attention To:', style='TableHeading')
+        firstRowCells[2].paragraphs[0].add_run('Attention To', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run(f'{addressee}, {district}.', style='SimpleText')
 
     def paraEvDetail(self, Addressee, District, items, testRequest):
@@ -229,17 +229,22 @@ class Report():
         #NOTE EVIDENCE SUBMISSION PARAGRAPH
         evidenceDetailsParagraph = self.document.add_paragraph("", style='CompactParagraph')
         evidenceDetailsParagraph_format = evidenceDetailsParagraph.paragraph_format
+        evidenceDetailsParagraph_format.space_before = Pt(2)
         evidenceDetailsParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        
+
         evidenceDetailsHeading = evidenceDetailsParagraph.add_run("Description of Evidence Submitted:", style='SimpleText')
         evidenceDetailsHeading.bold = True
         evidenceDetailsHeading.underline = True
         
         EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        
         EVdescriptionParagraph.add_run(f"The following sealed evidence {wasORwere}"
                                         f" submitted along with the request of {Addressee}, {District} for ",
                                          style='SimpleText')
-        EVdescriptionParagraph.add_run(f"{testRequest}.\n").bold =True
+        EVdescriptionParagraph.add_run(f"{testRequest}.").bold =True
+        # evidenceDetailsParagraph2 = self.document.add_paragraph("", style='CompactParagraph')
 
     #CREATE TABLE OF EVIDENCE INFORMATION
     def tableEvDetails(self, parcels):
@@ -366,7 +371,7 @@ class Report():
     #CREATE DIPOSITION OF EVIDENCE PARAGRAPH
     def paraDisposition(self):
         dispositionHeading = self.document.add_paragraph("", style="BoldUnderline")
-        dispositionHeading.add_run('Disposition of Heading:').font.size = Pt(11)
+        dispositionHeading.add_run('Disposition of Evidence:').font.size = Pt(11)
         dispositionParagraph = self.document.add_paragraph(f'{disposition}', style='CompactParagraph')
         dispositionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         EORParagraph = self.document.add_paragraph('', style='Bold')
