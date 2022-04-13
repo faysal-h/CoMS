@@ -167,7 +167,7 @@ class ParcelsDF(DataFrames):
     # Filters and Slices dataframe
     def getFirearmsOrAmmoDF(self, typeOfItems:list) -> pd.DataFrame:
         df1 = self.parcelsDF[self.parcelsDF['EV'].isin(typeOfItems)]
-        return df1[['ParcelNo', 'EVCaliber', 'EVType', 'EV', 'ItemNo', 'Quantity']]
+        return df1[['ParcelNo', 'EVCaliber', 'EVType', 'EV', 'ItemNo', 'Quantity', 'Notes']]
 
     def getNoOfParcels(self) -> int:
         return len(self.parcelsDF.drop_duplicates(['ParcelNo']).index)
@@ -239,7 +239,6 @@ if __name__ == "__main__":
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
     p = ParcelsDF(108185)
-
 
     print(p.parcelsDF)
 

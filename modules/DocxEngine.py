@@ -464,7 +464,8 @@ class FirearmsProcessor(Sheets):
                                 'FTMNO' : self.caseNumberParts[2],
                                 'MARKING': str(firearm[4])+"/"+str(self.caseNumberParts[2])+"/"+yearShort[2:],
                                 'ABIS': self.BalscanDate,
-                                'TESTFIRES': testFires
+                                'TESTFIRES': testFires,
+                                'NOTES': firearm[6]
                             }
 
                 self.firearmsDocTemplate.render(context)
@@ -559,7 +560,7 @@ class ReportProcessor(Sheets):
         # Finds and adds Cartridge case and shotshell case
         # Also sets Functionlity Testin True if firearm is present
         for parcel in self.parcels:
-            if str(parcel[8]).lower().find('cartridge') != -1:
+            if str(parcel[8]).lower().find('cart') != -1:
                 cc = cc + parcel[10]
             elif str(parcel[8]).lower().find('shot') != -1:
                 ss = ss + parcel[10]
