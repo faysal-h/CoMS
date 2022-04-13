@@ -60,9 +60,19 @@ class Report():
     
     def header(self, caseNo):
         section0 = self.document.sections[0]
-        section0.different_first_page_header_footer = True
+
+        # Set Different header and footer for first page
+        # section0.different_first_page_header_footer = True
+
+        # # # Footer of FIRST PAGE
+        # first_page_header = section0.first_page_header
+        
+        # paragraph = first_page_header.paragraphs[0]
+        # paragraph.text = 'First Page Header'
+
+        
+        # Default Header from Second page to onward pages
         header = section0.header
-        # section0.first_page_header = '123'
         paragraph = header.paragraphs[0]
         paragraph.text = f"\n\n\n\n\n\n\n\n\n\t\t{caseNo}\n"
 
