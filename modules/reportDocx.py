@@ -58,6 +58,14 @@ class Report():
             else:
                 return ""
     
+    def header(self, caseNo):
+        section0 = self.document.sections[0]
+        section0.different_first_page_header_footer = True
+        header = section0.header
+        # section0.first_page_header = '123'
+        paragraph = header.paragraphs[0]
+        paragraph.text = f"\n\n\n\n\n\n\n\n\n\t\t{caseNo}\n"
+
     def accusedStatementfrmName(self, accusedName):
             if(accusedName not in [None, '']):
                 return f"\n(said to be recovered from the accused {accusedName})"

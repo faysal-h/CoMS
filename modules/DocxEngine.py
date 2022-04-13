@@ -629,6 +629,7 @@ class ReportProcessor(Sheets):
         testReport.paraNotes()
         testReport.paraDisposition()
         # testReport.footer()
+        testReport.header(caseNo=self.fullCaseNumber)
         testReport.save(os.path.join(self.currentCaseFolderPath, f'Report {self.ftmNumber}.docx'))
         
         os.system(f"start {self.currentCaseFolderPath}")
