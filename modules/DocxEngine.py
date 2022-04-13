@@ -170,7 +170,9 @@ class ProcessingSheetProcessor(Sheets):
         self.TeamMember = self.caseDetailsDF.getValuefrmCaseDetails("TeamMember")
 
         self.noOfParcels = self.ParcelsDF.getNoOfParcels()
+        # Ammunition details in COC
         self.ammoItems = self.ParcelsDF.getAmmoItemNos() + ', Test Fires'
+        # Total items in last cell of COC
         self.totalItemsNos = self.ParcelsDF.getAllItemNos() + ', Test Fires'          
         # Create instance of DOCX TEMPLATE for PROCESSING SHEET
         self.processingDocTemplate = DocxTemplate(processingTemplatePath)

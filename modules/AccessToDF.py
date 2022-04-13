@@ -162,7 +162,7 @@ class CoCDF(DataFrames):
 class ParcelsDF(DataFrames):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
-        self.parcelsDF = self.getTableByFtmNo(queryParcelsDetails)
+        self.parcelsDF = (self.getTableByFtmNo(queryParcelsDetails)).sort_values(by=['ParcelNo'])
 
     # Filters and Slices dataframe
     def getFirearmsOrAmmoDF(self, typeOfItems:list) -> pd.DataFrame:
@@ -234,13 +234,14 @@ class IdentifiersDF(DataFrames):
 
 if __name__ == "__main__":
 
-    d = CaseDetailsDF(123456)
-    print(type(d.getBatchDate()))
+    # d = CaseDetailsDF(123456)
+    # print(type(d.getBatchDate()))
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
-    # p = ParcelsDF(123456)
+    p = ParcelsDF(108185)
 
-    # print(p.getParcelDetailsForReport())
+
+    print(p.parcelsDF)
 
     # i = IdentifiersDF('01/03')
     # print(i.identifiersDF)
