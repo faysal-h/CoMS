@@ -103,7 +103,7 @@ class menu():
         DocxEngine.CartridgeProcessor(ftmNumber=ftmNumber).cartridgeSheetMaker()
         DocxEngine.BulletProcessor(ftmNumber=ftmNumber).bulletSheetMaker()
         DocxEngine.ReportProcessor(ftmNumber=ftmNumber).reportGenerator()
-        pymsgbox.alert(text=f"All sheets are generated", title="Success")
+        # pymsgbox.alert(text=f"All sheets are generated", title="Success")
 
     def generateIdentifiers(self, batchDate):        
         DocxEngine.IdentifiersProcessor(batchDate).FileIdentifierMaker()
