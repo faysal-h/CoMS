@@ -17,8 +17,9 @@ class menu():
     def __init__(self) -> None:
          self.choices = {
                         'Generate Sheets' : self.getCaseNoFromUser,
-                        'Generate Identifiers' : self.getBatchDateFromUser,
-                        "Quit": self.quitCMS
+                        'Generate Identifiers' : self.generateIdentifiers,
+                        'Batch Sheet Generator': self.generateSheetsInBatch, 
+                        'Quit': self.quitCMS
                         }
 
     def numericORlengthWarning(self):
@@ -46,7 +47,7 @@ class menu():
         else:
             parsedDate = self.parse_date(batchDate)
             if(DataFrames(ftmNo="").checkIfBatcDateExist(BatchDate=parsedDate)):
-                self.generateIdentifiers(batchDate=batchDate)
+                return batchDate
             else:
                 self.wrongDateWarning()
     
@@ -54,7 +55,7 @@ class menu():
         # return pymsgbox.prompt(text="Enter FTM Number for sheets.\nEnter BATCH DATE for Identifiers", title='CMS')
         return pymsgbox.confirm(text="What do you want to do?", title='CMS', 
                                 buttons=[   'Generate Sheets', 'Generate Identifiers',
-                                            'Quit'
+                                            'Batch Sheet Generator','Quit'
                                         ]
                                 )
 
@@ -105,10 +106,24 @@ class menu():
         DocxEngine.ReportProcessor(ftmNumber=ftmNumber).reportGenerator()
         # pymsgbox.alert(text=f"All sheets are generated", title="Success")
 
-    def generateIdentifiers(self, batchDate):        
+    def generateIdentifiers(self):
+        batchDate = self.getBatchDateFromUser()
+        logging.info(f'batch date is {batchDate}')
         DocxEngine.IdentifiersProcessor(batchDate).FileIdentifierMaker()
         DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
         DocxEngine.CPRProcessor(batchDate).FileCPRMaker()
 
+    def generateSheetsInBatch(self):
+        batchDate = self.getBatchDateFromUser()
+        cases = DocxEngine.IdentifiersProcessor(batchDate).getCasesInBatchDate()
+        for case in cases:
+            try:
+                self.generateSheets(case)
+            except ValueError as e:
+                pymsgbox.alert(text=f'Data of Case {case} is not complete in Database',
+                                title='Warning')
+                logging.error(e)
+        pymsgbox.alert(text=f"Sheets of all cases are generated", title="Success")
+        
 if __name__ == "__main__":
     menu().run()

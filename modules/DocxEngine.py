@@ -96,6 +96,10 @@ class IdentifiersProcessor():
         i.saveDoc(os.path.join(self.currentBatchFolderPath, f"Envelops-{self.fileNameEnder}.docx"))
         os.system(f"start {self.currentBatchFolderPath}")
 
+    def getCasesInBatchDate(self):
+        return [identifier[3] for identifier in self.Identifiers] 
+
+
 class CPRProcessor(IdentifiersProcessor):
     def __init__(self, batchDate) -> None:
         super().__init__(batchDate)
@@ -182,16 +186,16 @@ class ProcessingSheetProcessor(Sheets):
         tm = self.TeamMember
 
         if(tm == None and bs == None):
-            print("single withouth balscan")
+            logging.info("single without balscan")
             return 1
         elif(tm == None and bs != None):
-            print('Single with balscan')
+            logging.info('Single with balscan')
             return 2
         elif(bs == None):
-            print('team without balscan')
+            logging.info('team without balscan')
             return 3
         else:
-            print('team with balscan')
+            logging.info('team with balscan')
             return 4
 
     def setCoCandEVdetails(self):
