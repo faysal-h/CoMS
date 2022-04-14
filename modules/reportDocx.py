@@ -7,6 +7,8 @@ from docx.shared import Inches, Pt, Mm
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
+from docx.enum.text import WD_LINE_SPACING
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -331,7 +333,11 @@ class Report():
             cell.width = Mm(90)
 
         #This is to seprate next table from this one
-        self.document.add_paragraph('', style='CompactParagraph')
+        seprationPara = self.document.add_paragraph(style='CompactParagraph')
+        seprationPara.add_run('   ').font.size = Pt(1)
+        paragraph_format = seprationPara.paragraph_format
+        seprationPara.paragraph_format.line_spacing_rule = WD_LINE_SPACING.EXACTLY
+        paragraph_format.line_spacing = Pt(2)
 
     #CREATE TABLE OF ANALYSIS INFORMATION
     def tableAnalysisDetails(self, startDate : str, endDate : str):
