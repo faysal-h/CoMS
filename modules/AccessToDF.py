@@ -46,8 +46,12 @@ queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.Submiss
                         FROM Parcel INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                         WHERE (((Parcel.CaseNoFK)=
                         '''
-
-queryCOC = '''SELECT COC.[caseFTMFK], COC.[frmGRLDate], COC.[ProcessingDate], COC.[ComparisonStartDate], 
+queryCOC = '''SELECT CaseDetails.caseFTM, CaseDetails.[frmGRLDate], CaseDetails.[ProcessingDate], CaseDetails.[ComparisonStartDate],
+                CaseDetails.[ComparisonCompDate], CaseDetails.[ReviewStartDate], CaseDetails.[ReviewEndDate], CaseDetails.[BalScanStartDate],
+                CaseDetails.[BalScanCompDate], CaseDetails.[toCPRDate]
+                FROM CaseDetails
+                WHERE (((CaseDetails.caseFTM)='''
+queryCOCOLD = '''SELECT COC.[caseFTMFK], COC.[frmGRLDate], COC.[ProcessingDate], COC.[ComparisonStartDate], 
                 COC.[ComparisonCompDate], COC.[ReviewStartDate], COC.[ReviewEndDate], COC.[BalScanStartDate], 
                 COC.[BalScanCompDate], COC.[toCPRDate]
                 FROM COC
@@ -135,8 +139,7 @@ class CoCDF(DataFrames):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
 
-        self.cocDF = self.getTableByFtmNo(queryCOC).drop_duplicates(
-                                subset=['caseFTMFK'], keep='last')
+        self.cocDF = self.getTableByFtmNo(queryCOC)
     
     def getCOCdate(self, whichTypeOfDate) -> datetime:
 
@@ -238,9 +241,9 @@ if __name__ == "__main__":
     # print(type(d.getBatchDate()))
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
-    p = ParcelsDF(108185)
+    # p = ParcelsDF(108185)
 
-    print(p.parcelsDF)
+    # print(p.parcelsDF)
 
     # i = IdentifiersDF('01/03')
     # print(i.identifiersDF)
@@ -250,8 +253,8 @@ if __name__ == "__main__":
     # # print(i.combineCaseDetailsWithFIRDate())
 
 
-    # c = CoCDF(121212)
-    # print(c.cocDF)
+    c = CoCDF(123456)
+    print(c.cocDF)
     # print(c.cocDF.empty)
     # print(c.getCOCdateString('ComparisonCompDate'))
     # # print(c.getCOCdateString('BalScanStartDate'))
