@@ -51,11 +51,6 @@ queryCOC = '''SELECT CaseDetails.caseFTM, CaseDetails.[frmGRLDate], CaseDetails.
                 CaseDetails.[BalScanCompDate], CaseDetails.[toCPRDate]
                 FROM CaseDetails
                 WHERE (((CaseDetails.caseFTM)='''
-queryCOCOLD = '''SELECT COC.[caseFTMFK], COC.[frmGRLDate], COC.[ProcessingDate], COC.[ComparisonStartDate], 
-                COC.[ComparisonCompDate], COC.[ReviewStartDate], COC.[ReviewEndDate], COC.[BalScanStartDate], 
-                COC.[BalScanCompDate], COC.[toCPRDate]
-                FROM COC
-                WHERE (((COC.[caseFTMFK])='''
 
 
 #TODO Need to change Connectable ENGINE to SQLAlchemy
