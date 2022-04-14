@@ -633,10 +633,12 @@ class ReportProcessor(Sheets):
         testReport.paraNotes()
         testReport.paraDisposition()
         # testReport.footer()
+        # adds header from second page onwards
         testReport.header(caseNo=self.fullCaseNumber)
         testReport.save(os.path.join(self.currentCaseFolderPath, f'Report {self.ftmNumber}.docx'))
         
-        os.system(f"start {self.currentCaseFolderPath}")
+        return self.currentCaseFolderPath
+        
         
 
 

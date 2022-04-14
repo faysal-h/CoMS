@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import logging
 from dateutil.parser import parse
@@ -54,8 +55,11 @@ class menu():
     def userPrompt(self):
         # return pymsgbox.prompt(text="Enter FTM Number for sheets.\nEnter BATCH DATE for Identifiers", title='CMS')
         return pymsgbox.confirm(text="What do you want to do?", title='CMS', 
-                                buttons=[   'Generate Sheets', 'Generate Identifiers',
-                                            'Batch Sheet Generator','Quit'
+                                buttons=[   
+                                            'Generate Sheets',
+                                            'Batch Sheet Generator',
+                                            'Generate Identifiers',
+                                            'Quit'
                                         ]
                                 )
 
@@ -103,8 +107,9 @@ class menu():
         DocxEngine.FirearmsProcessor(ftmNumber=ftmNumber).firearmSheetMaker()
         DocxEngine.CartridgeProcessor(ftmNumber=ftmNumber).cartridgeSheetMaker()
         DocxEngine.BulletProcessor(ftmNumber=ftmNumber).bulletSheetMaker()
-        DocxEngine.ReportProcessor(ftmNumber=ftmNumber).reportGenerator()
+        folderPath = DocxEngine.ReportProcessor(ftmNumber=ftmNumber).reportGenerator()
         # pymsgbox.alert(text=f"All sheets are generated", title="Success")
+        return folderPath
 
     def generateIdentifiers(self):
         batchDate = self.getBatchDateFromUser()
@@ -113,16 +118,20 @@ class menu():
         DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
         DocxEngine.CPRProcessor(batchDate).FileCPRMaker()
 
+
     def generateSheetsInBatch(self):
         batchDate = self.getBatchDateFromUser()
         cases = DocxEngine.IdentifiersProcessor(batchDate).getCasesInBatchDate()
+        folderPath = ''
         for case in cases:
             try:
-                self.generateSheets(case)
-            except ValueError as e:
+                folderPath = self.generateSheets(case)
+            except Exception as e:
                 pymsgbox.alert(text=f'Data of Case {case} is not complete in Database',
                                 title='Warning')
                 logging.error(e)
+        
+        os.system(f"start {folderPath}")
         pymsgbox.alert(text=f"Sheets of all cases are generated", title="Success")
         
 if __name__ == "__main__":

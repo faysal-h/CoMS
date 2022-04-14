@@ -74,7 +74,7 @@ class UserPaths():
 
     @classmethod
     def makeFolderInPath(cls, path:str, caseNo: str):
-        caseFolder = os.path.join(path, caseNo)
+        caseFolder = os.path.join(path, caseNo, 'Sheets')
         return cls.checkNcreateFolder(caseFolder)
 
 
