@@ -76,7 +76,7 @@ class Report():
         # Default Header from Second page to onward pages
         header = section0.header
         paragraph = header.paragraphs[0]
-        paragraph.text = f"\n\n\n\n\n\n\n\n\n\t\t{caseNo}\n"
+        paragraph.text = f"\n\n\n\n\n\n\n\n\n\t\tCase#: {caseNo}\n"
 
     def accusedStatementfrmName(self, accusedName):
             if(accusedName not in [None, '']):

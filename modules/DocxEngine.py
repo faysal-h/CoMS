@@ -521,7 +521,8 @@ class BulletProcessor(Sheets):
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
     def bulletSheetMaker(self):
-        # for bullet in self.bullets:
+        if (len(self.bullets) > 0):
+           for bullet in self.bullets:
         #     # yearShort = str(self.caseNumberParts[0])
 
             context =   {   
@@ -647,9 +648,9 @@ class ReportProcessor(Sheets):
 
 if __name__ == "__main__":
 
-    r = ReportProcessor(123456)
-    print(r.parcels, end="\n")
-    print(r.testRequestHeading())
+    # r = ReportProcessor(123456)
+    # print(r.parcels, end="\n")
+    # print(r.testRequestHeading())
 
     # r.reportGenerator()
     
@@ -686,8 +687,8 @@ if __name__ == "__main__":
     # # print(c.cartridges)
     # c.cartridgeSheetMaker()
 
-    # b = BulletProcessor(123456)
-    # b.bulletSheetMaker()
+    b = BulletProcessor(123456)
+    print(len(b.bullets))
 
     # print(UserPaths().checkNcreateCaseWorkDirectory())
     # os.system(f"start {r.currentCaseFolderPath}")

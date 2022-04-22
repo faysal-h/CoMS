@@ -102,12 +102,14 @@ class menu():
             logging.info(e)
             return self.wrongDateWarning()
 
-    def generateSheets(self, ftmNumber):
+    def generateSheets(self, ftmNumber, openFolder=True):
         DocxEngine.ProcessingSheetProcessor(ftmNumber=ftmNumber).proceesingSheetMaker()
         DocxEngine.FirearmsProcessor(ftmNumber=ftmNumber).firearmSheetMaker()
         DocxEngine.CartridgeProcessor(ftmNumber=ftmNumber).cartridgeSheetMaker()
         DocxEngine.BulletProcessor(ftmNumber=ftmNumber).bulletSheetMaker()
         folderPath = DocxEngine.ReportProcessor(ftmNumber=ftmNumber).reportGenerator()
+        if (openFolder is True):
+            os.system(f"start {folderPath}")
         # pymsgbox.alert(text=f"All sheets are generated", title="Success")
         return folderPath
 
@@ -118,14 +120,13 @@ class menu():
         DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
         DocxEngine.CPRProcessor(batchDate).FileCPRMaker()
 
-
     def generateSheetsInBatch(self):
         batchDate = self.getBatchDateFromUser()
         cases = DocxEngine.IdentifiersProcessor(batchDate).getCasesInBatchDate()
         folderPath = ''
         for case in cases:
             try:
-                folderPath = self.generateSheets(case)
+                folderPath = self.generateSheets(ftmNumber=case, openFolder=False)
             except Exception as e:
                 pymsgbox.alert(text=f'Data of Case {case} is not complete in Database',
                                 title='Warning')

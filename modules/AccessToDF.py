@@ -86,8 +86,6 @@ class AccessFile():
             return df
 
 
-
-
 class DataFrames():
     '''This class and its child classess read queries and manipulate data in the form of 
         PANDAS DATAFRAMES'''
@@ -112,6 +110,7 @@ class DataFrames():
             return False
         else:
             return True
+
 
 class CaseDetailsDF(DataFrames):
     '''class for manipulating DATAFRMAE of  Case Details Table in ACCESS DATABASE'''
@@ -196,6 +195,7 @@ class ParcelsDF(DataFrames):
         parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
         return parcelsForReport.values.tolist()
 
+
 class IdentifiersDF(DataFrames):
 
     def __init__(self, BatchDate, ftmNo="") -> None:
@@ -236,9 +236,9 @@ if __name__ == "__main__":
     # print(type(d.getBatchDate()))
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
-    # p = ParcelsDF(108185)
+    p = ParcelsDF(108185)
 
-    # print(p.parcelsDF)
+    print(p.parcelsDF)
 
     # i = IdentifiersDF('01/03')
     # print(i.identifiersDF)
@@ -248,8 +248,8 @@ if __name__ == "__main__":
     # # print(i.combineCaseDetailsWithFIRDate())
 
 
-    c = CoCDF(123456)
-    print(c.cocDF)
+    # c = CoCDF(123456)
+    # print(c.cocDF)
     # print(c.cocDF.empty)
     # print(c.getCOCdateString('ComparisonCompDate'))
     # # print(c.getCOCdateString('BalScanStartDate'))
