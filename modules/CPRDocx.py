@@ -121,7 +121,7 @@ class CPRDocument():
 
         newRow[0].paragraphs[0].add_run(Serial)
         newRow[1].paragraphs[0].add_run(CaseNo)
-        newRow[4].paragraphs[0].add_run(f'{FIR}, ({FIRDate})')
+        newRow[4].paragraphs[0].add_run(f'{FIR} ({FIRDate})')
         newRow[5].paragraphs[0].add_run(f'{PS.title()}, {District.title()}')
 
 

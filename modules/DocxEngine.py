@@ -1,4 +1,3 @@
-
 import os
 import logging
 
@@ -39,9 +38,14 @@ class IdentifiersProcessor():
         # BatchDate in string format
         self.fileNameEnder = self.batchDateToString()
 
+    def zeroBeforFtmNumber(self, ftmNumber) -> str:
+        if ftmNumber < 100000:
+            return str(0) + str(ftmNumber)
+        else:
+            return str(ftmNumber)
+
     def batchDateToString(self) -> str:
         return ''.join(ch for ch in str(self.batchDate) if ch.isalnum())
-
 
     def noneToEmptyValue(self, value):
         if(value==None):
@@ -52,7 +56,7 @@ class IdentifiersProcessor():
     def makeFoldersOfAllCasesInBatch(self):
         for identifier in self.Identifiers:
 
-            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
+            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + self.zeroBeforFtmNumber(identifier[3]) 
 
             # Generates Respective case folder
             batchDate = identifier[0].to_pydatetime()
@@ -69,7 +73,7 @@ class IdentifiersProcessor():
 
         for identifier in self.Identifiers:
 
-            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
+            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + self.zeroBeforFtmNumber(identifier[3]) 
             caseNo2 = self.noneToEmptyValue(identifier[5])
 
             # generates identifiers for each case
@@ -88,7 +92,7 @@ class IdentifiersProcessor():
         for envelop in self.Identifiers:
             logging.info(envelop)
 
-            caseNoFull = "PFSA" + str(envelop[1]) + "-" + str(envelop[2]) + "-FTM-" + str(envelop[3]) 
+            caseNoFull = "PFSA" + str(envelop[1]) + "-" + str(envelop[2]) + "-FTM-" + self.zeroBeforFtmNumber(envelop[3]) 
 
             # i.tableIdentifiersFiles("PFSA2020-123456-FTM-123456", "PFSA2020-123456-FTM-123456", 1, "123 (XX.XX.XXXX)", "ABC&XYZ")
             i.addEnvelopsIdentifiers(caseNo1=caseNoFull, AddressTo=envelop[4],district=str(envelop[9]) )
@@ -109,7 +113,7 @@ class CPRProcessor(IdentifiersProcessor):
 
         for i, identifier in enumerate(self.Identifiers, start=1):
 
-            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + str(identifier[3]) 
+            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(identifier[2]) + "-FTM-" + self.zeroBeforFtmNumber(identifier[3]) 
             
             # generates identifiers for each case
             cpr.addRowInMainTable(Serial=str(i), CaseNo=caseNoFull, FIR=str(identifier[6]),
@@ -156,9 +160,15 @@ class Sheets():
         else:
             return caseNo2
 
+    def zeroBeforFtmNumber(self, ftmNumber) -> str:
+        if ftmNumber < 100000:
+            return str(0) + str(ftmNumber)
+        else:
+            return str(ftmNumber)
+
     def fullCaseNumber(self) -> str:
         x = self.caseDetailsDF.getCaseNoParts()
-        return "PFSA"+ str(x[0]) + "-" + str(x[1]) + "-FTM-" + str(x[2])
+        return "PFSA"+ str(x[0]) + "-" + str(x[1]) + "-FTM-" + self.zeroBeforFtmNumber(x[2])
 
     def numberToWord(self, digit):
         iE = inflect.engine()
@@ -466,7 +476,7 @@ class FirearmsProcessor(Sheets):
                                 'DATE' : self.processingDate,
                                 'CALIBER' : firearm[1],
                                 'FTMNO' : self.caseNumberParts[2],
-                                'MARKING': str(firearm[4])+"/"+str(self.caseNumberParts[2])+"/"+yearShort[2:],
+                                'MARKING': str(firearm[4])+"/"+self.zeroBeforFtmNumber(self.caseNumberParts[2])+"/"+yearShort[2:],
                                 'ABIS': self.BalscanDate,
                                 'TESTFIRES': testFires,
                                 'NOTES': firearm[6]
