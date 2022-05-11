@@ -41,14 +41,14 @@ class menu():
                 self.generateSheets(ftmNo)
    
     def getBatchDateFromUser(self):
-        batchDate = pymsgbox.prompt(text='Enter Batch Dat', title="Identifiers Generator")
+        batchDate = pymsgbox.prompt(text='Enter Batch Date', title="Identifiers Generator")
         
         if(batchDate is None):
             self.run()
         else:
             parsedDate = self.parse_date(batchDate)
             if(DataFrames(ftmNo="").checkIfBatcDateExist(BatchDate=parsedDate)):
-                return batchDate
+                return parsedDate
             else:
                 self.wrongDateWarning()
     
@@ -96,7 +96,7 @@ class menu():
         """
         try: 
             batchDate = parse(batchDate, fuzzy=False, dayfirst=True)
-            return batchDate.strftime('%d/%m/%Y')
+            return batchDate.strftime('%Y-%m-%d')
 
         except ValueError as e:
             logging.info(e)
