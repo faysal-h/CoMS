@@ -87,7 +87,7 @@ class IdentifiersDocument():
         id = self.document.add_paragraph("", style="Bold16")
         id_format = id.paragraph_format
         id_format.space_after = Pt(0)
-        id.add_run(f'\t{caseNo1}\n').font.size = Pt(10)
+        id.add_run(f'\n\n\t{caseNo1}\n').font.size = Pt(10)
         id.add_run('To:\n').font.size = Pt(11)
         id.add_run(f'\t{AddressTo},\n').font.size = Pt(13)
         id.add_run(f'\t{district}.\n').font.size = Pt(13)
