@@ -27,25 +27,26 @@ queryCaseDetails = '''SELECT CaseDetails.[caseYear], CaseDetails.[casePFSA], Cas
 
 queryCaseDetailsForIdentifiersDate = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
                                     CaseDetails.caseFTM, CaseDetails.Addressee, CaseDetails.CaseNosAddl, 
-                                    Items.FIR, Items.FIRDate, Items.PS, Items.District, CaseDetails.NoOfParcels
+                                    Parcel.FIR, Parcel.FIRDate, Parcel.PS, Parcel.District, CaseDetails.NoOfParcels
                                     FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] = 
                                     Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                                     '''
 
 queryCaseDetailsForIdentifiersFtm = '''SELECT CaseDetails.Batch, CaseDetails.caseYear, CaseDetails.casePFSA, 
                                     CaseDetails.caseFTM, CaseDetails.Addressee, CaseDetails.CaseNosAddl, 
-                                    Items.FIR, Items.FIRDate, Items.PS, Items.District, CaseDetails.NoOfParcels
+                                    Parcel.FIR, Parcel.FIRDate, Parcel.PS, Parcel.District, CaseDetails.NoOfParcels
                                     FROM (CaseDetails INNER JOIN Parcel ON CaseDetails.[caseFTM] = Parcel.[CaseNoFK]) INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                                     WHERE (((CaseDetails.caseFTM)= 
                                     '''
 
 queryParcelsDetails = '''SELECT Parcel.CaseNoFK, Parcel.ParcelNo, Parcel.SubmissionDate, Parcel.SubmitterName, 
-                        Parcel.Rank, Items.FIR, Items.FIRDate, Items.EVCaliber, 
-                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity, Items.Notes, Items.PS, 
-                        Items.District, Items.Accused
+                        Parcel.Rank, Parcel.FIR, Parcel.FIRDate, Items.EVCaliber, 
+                        Items.EVType, Items.EV, Items.ItemNo, Items.Quantity, Items.Notes, Parcel.PS, 
+                        Parcel.District, Items.Accused
                         FROM Parcel INNER JOIN Items ON Parcel.[ID] = Items.[ParcelNoFK]
                         WHERE (((Parcel.CaseNoFK)=
                         '''
+
 queryCOC = '''SELECT CaseDetails.caseFTM, CaseDetails.[frmGRLDate], CaseDetails.[ProcessingDate], CaseDetails.[ComparisonStartDate],
                 CaseDetails.[ComparisonCompDate], CaseDetails.[ReviewStartDate], CaseDetails.[ReviewEndDate], CaseDetails.[BalScanStartDate],
                 CaseDetails.[BalScanCompDate], CaseDetails.[toCPRDate]
