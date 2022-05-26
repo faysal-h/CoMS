@@ -12,26 +12,13 @@ from docx.enum.text import WD_LINE_SPACING
 
 logging.basicConfig(level=logging.DEBUG)
 
-note = ("The results in this report relate only to the item(s) as"
-        " received and tested. Each received item is marked with case number,"
-        " item number and duly signed.")
-
-disposition = ( "The case property / evidence may be received by the responsible"
-                " official of your office on submitting authorization letter/docket"
-                " within 15 days after the receipt of this report. "
-                "Ammunition components should be maintained for possible future examinations."
-                )
-
-listResults = ['The item P1 pistol was examined and found to be in mechanical operating condition.',
-                'The items C1-C7 cartridge cases were identified as having been fired in the item P1 pistol.',
-                'Because of differences in individual characteristics, the items C1-C7 cartridge cases could not have been fired in the item P1 pistol.',
-                 'Because of the lack of sufficient suitable corresponding microscopic markings, it was not possible to identify or eliminate the items C1-C7 cartridge cases as having been fired in the item P1 pistol.']
 
 
 '''
 NOTE There should be a template docx in the folder with the following custom sytles
 BulletCustomNormal , type= Paragraph, bullets enabled
 TableGridCustom ,   type = Table
+
 NOTE The page numbering field should also be enabled as page numbering is not supported at this moment.
 '''
 class Report():
@@ -358,27 +345,27 @@ class Report():
 
     #CREATE TABLE OF ANALYSIS INFORMATION
     def tableAnalysisDetails(self, startDate : str, endDate : str):
-        tableAnalysis = self.document.add_table(rows=2, cols=3)
-        tableAnalysis.style = 'TableGridCustom'
-        tableAnalysis.allow_autofit = False
+        tableAnalysis = self.document.tables[2]
+        # tableAnalysis.style = 'TableGridCustom'
+        # tableAnalysis.allow_autofit = False
         #Length of table is 180mm
-        tableAnalysis.rows[0].cells[0].width = Mm(10)
-        tableAnalysis.rows[0].cells[1].width = Mm(50)
-        tableAnalysis.rows[0].cells[2].width = Mm(90)
-        tableAnalysis.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        tableAnalysis.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        tableAnalysis.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        # tableAnalysis.rows[0].cells[0].width = Mm(10)
+        # tableAnalysis.rows[0].cells[1].width = Mm(50)
+        # tableAnalysis.rows[0].cells[2].width = Mm(90)
+        # tableAnalysis.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        # tableAnalysis.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        # tableAnalysis.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
-        firstRowCells = tableAnalysis.rows[0].cells
-        firstRowCells[0].paragraphs[0].add_run('Analysis Start Date',style='TableHeading')
-        firstRowCells[1].paragraphs[0].add_run('Analysis Completion Date', style='TableHeading')
-        firstRowCells[2].paragraphs[0].add_run('Examination Method/ Tests Performed', style='TableHeading')
+        # firstRowCells = tableAnalysis.rows[0].cells
+        # firstRowCells[0].paragraphs[0].add_run('Analysis Start Date',style='TableHeading')
+        # firstRowCells[1].paragraphs[0].add_run('Analysis Completion Date', style='TableHeading')
+        # firstRowCells[2].paragraphs[0].add_run('Examination Method/ Tests Performed', style='TableHeading')
 
         secondRowCells = tableAnalysis.rows[1].cells
         secondRowCells[0].paragraphs[0].add_run(f'{startDate}')
         secondRowCells[1].paragraphs[0].add_run(f'{endDate}')
-        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Comparison Microscopy, Test Firing and ABIS Scanning',
-                                                style='SimpleText')
+        # secondRowCells[2].paragraphs[0].add_run('Physical Examination, Comparison Microscopy, Test Firing and ABIS Scanning',
+        #                                         style='SimpleText')
 
         # adjust column 1 length
         for cell in tableAnalysis.columns[0].cells:
@@ -403,7 +390,7 @@ class Report():
     #CREATE NOTE(S)
     def paraNotes(self):
         notesHeading = self.document.add_paragraph("", style="BoldItalic")
-        notesHeading.add_run(f'Note(s): {note}').font.size = Pt(11)
+        notesHeading.add_run(f'Note(s):').font.size = Pt(11)
 
         # listNotes = ['This is the first note.', 'This is the second note.']
         # for i in listNotes:
@@ -413,7 +400,7 @@ class Report():
     def paraDisposition(self):
         dispositionHeading = self.document.add_paragraph("", style="BoldUnderline")
         dispositionHeading.add_run('Disposition of Evidence:').font.size = Pt(11)
-        dispositionParagraph = self.document.add_paragraph(f'{disposition}', style='CompactParagraph')
+        dispositionParagraph = self.document.add_paragraph(f'', style='CompactParagraph')
         dispositionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         EORParagraph = self.document.add_paragraph('', style='Bold')
         EORParagraph.add_run('X...End of Report...X').font.size = Pt(12)

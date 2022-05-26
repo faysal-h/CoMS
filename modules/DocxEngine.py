@@ -640,9 +640,9 @@ class ReportProcessor(Sheets):
 
         testReport.tableAnalysisDetails(startDate=self.processingDate, endDate=self.toCPRdate)
 
-        testReport.paraResults()
-        testReport.paraNotes()
-        testReport.paraDisposition()
+        # testReport.paraResults()
+        # testReport.paraNotes()
+        # testReport.paraDisposition()
         # testReport.footer()
         # adds header from second page onwards
         testReport.header(caseNo=self.fullCaseNumber)
