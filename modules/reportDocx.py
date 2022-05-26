@@ -239,30 +239,24 @@ class Report():
         firstRowCells[3].paragraphs[0].add_run(f'{addressee}, {district}.', style='SimpleText')
 
     def paraEvDetail(self, Addressee, District, items, testRequest):
-        if(items>1):
-            wasORwere = "items were"
-        else:
-            wasORwere = "item was"
+        # if(items>1):
+        #     wasORwere = "items were"
+        # else:
+        #     wasORwere = "item was"
             
         if(testRequest == None or testRequest == ''):
             testRequest = "Comparison of Cartridge Cases and Shotshell Cases with Submitted Firearms and Functionality Testing"
 
         #NOTE EVIDENCE SUBMISSION PARAGRAPH
-        evidenceDetailsParagraph = self.document.add_paragraph("", style='CompactParagraph')
-        evidenceDetailsParagraph_format = evidenceDetailsParagraph.paragraph_format
-        evidenceDetailsParagraph_format.space_before = Pt(2)
-        evidenceDetailsParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        # evidenceDetailsParagraph = self.document.add_paragraph("", style='CompactParagraph')
+        # evidenceDetailsParagraph_format = evidenceDetailsParagraph.paragraph_format
+        # evidenceDetailsParagraph_format.space_before = Pt(2)
+        # evidenceDetailsParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         
-
-        evidenceDetailsHeading = evidenceDetailsParagraph.add_run("Description of Evidence Submitted:", style='SimpleText')
-        evidenceDetailsHeading.bold = True
-        evidenceDetailsHeading.underline = True
-        
-        EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
+        EVdescriptionParagraph = self.document.paragraphs[2]
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         
-        EVdescriptionParagraph.add_run(f"The following sealed evidence {wasORwere}"
-                                        f" submitted along with the request of {Addressee}, {District} for ",
+        EVdescriptionParagraph.add_run(f" submitted along with the request of {Addressee}, {District} for ",
                                          style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.").bold =True
         # evidenceDetailsParagraph2 = self.document.add_paragraph("", style='CompactParagraph')
