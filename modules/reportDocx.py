@@ -12,26 +12,13 @@ from docx.enum.text import WD_LINE_SPACING
 
 logging.basicConfig(level=logging.DEBUG)
 
-note = ("The results in this report relate only to the item(s) as"
-        " received and tested. Each received item is marked with case number,"
-        " item number and duly signed.")
-
-disposition = ( "The case property / evidence may be received by the responsible"
-                " official of your office on submitting authorization letter/docket"
-                " within 15 days after the receipt of this report. "
-                "Ammunition components should be maintained for possible future examinations."
-                )
-
-listResults = ['The item P1 pistol was examined and found to be in mechanical operating condition.',
-                'The items C1-C7 cartridge cases were identified as having been fired in the item P1 pistol.',
-                'Because of differences in individual characteristics, the items C1-C7 cartridge cases could not have been fired in the item P1 pistol.',
-                 'Because of the lack of sufficient suitable corresponding microscopic markings, it was not possible to identify or eliminate the items C1-C7 cartridge cases as having been fired in the item P1 pistol.']
 
 
 '''
 NOTE There should be a template docx in the folder with the following custom sytles
 BulletCustomNormal , type= Paragraph, bullets enabled
 TableGridCustom ,   type = Table
+
 NOTE The page numbering field should also be enabled as page numbering is not supported at this moment.
 '''
 class Report():
@@ -211,57 +198,52 @@ class Report():
     #CASE NUMBER TABLE
     def tableCaseDetails(self, caseNo1, caseNo2, addressee, district):
         
-        tableCaseDetails = self.document.add_table(rows=1, cols=4)
+        tableCaseDetails = self.document.tables[0]
         #TABLE STYLE
         #tableCaseDetails.columns[0].width = Cm(1)
-        tableCaseDetails.style = 'TableGridCustom'
-        tableCaseDetails.allow_autofit =False
+        # tableCaseDetails.style = 'TableGridCustom'
+        # tableCaseDetails.allow_autofit =False
+        
         #Length of table is 6309360
-        tableCaseDetails.rows[0].cells[0].width = Mm(32)
-        tableCaseDetails.rows[0].cells[1].width = Mm(70)
-        tableCaseDetails.rows[0].cells[2].width = Mm(32)
-        tableCaseDetails.rows[0].cells[3].width = Mm(52)
-        tableCaseDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableCaseDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableCaseDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableCaseDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[0].width = Mm(32)
+        # tableCaseDetails.rows[0].cells[1].width = Mm(70)
+        # tableCaseDetails.rows[0].cells[2].width = Mm(32)
+        # tableCaseDetails.rows[0].cells[3].width = Mm(52)
+        # tableCaseDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
         #TABLE VALUES
-        firstRowCells = tableCaseDetails.rows[0].cells
-        firstRowCells[0].paragraphs[0].add_run('Agency Case#',style='TableHeading')
+        firstRowCells = tableCaseDetails.rows[1].cells
+        # firstRowCells[0].paragraphs[0].add_run('Agency Case#',style='TableHeading')
         firstRowCells[1].paragraphs[0].add_run(f'{caseNo1}', style='SimpleText')
         if(caseNo2 in [None, "", "None"] ):
             pass
         else:
             firstRowCells[1].paragraphs[0].add_run(f'\n{caseNo2}', style='SimpleText')
-        firstRowCells[2].paragraphs[0].add_run('Attention To', style='TableHeading')
+        # firstRowCells[2].paragraphs[0].add_run('Attention To', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run(f'{addressee}, {district}.', style='SimpleText')
 
     def paraEvDetail(self, Addressee, District, items, testRequest):
-        if(items>1):
-            wasORwere = "items were"
-        else:
-            wasORwere = "item was"
+        # if(items>1):
+        #     wasORwere = "items were"
+        # else:
+        #     wasORwere = "item was"
             
         if(testRequest == None or testRequest == ''):
             testRequest = "Comparison of Cartridge Cases and Shotshell Cases with Submitted Firearms and Functionality Testing"
 
         #NOTE EVIDENCE SUBMISSION PARAGRAPH
-        evidenceDetailsParagraph = self.document.add_paragraph("", style='CompactParagraph')
-        evidenceDetailsParagraph_format = evidenceDetailsParagraph.paragraph_format
-        evidenceDetailsParagraph_format.space_before = Pt(2)
-        evidenceDetailsParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        # evidenceDetailsParagraph = self.document.add_paragraph("", style='CompactParagraph')
+        # evidenceDetailsParagraph_format = evidenceDetailsParagraph.paragraph_format
+        # evidenceDetailsParagraph_format.space_before = Pt(2)
+        # evidenceDetailsParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         
-
-        evidenceDetailsHeading = evidenceDetailsParagraph.add_run("Description of Evidence Submitted:", style='SimpleText')
-        evidenceDetailsHeading.bold = True
-        evidenceDetailsHeading.underline = True
-        
-        EVdescriptionParagraph = self.document.add_paragraph("", style='CompactParagraph')
+        EVdescriptionParagraph = self.document.paragraphs[2]
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
         
-        EVdescriptionParagraph.add_run(f"The following sealed evidence {wasORwere}"
-                                        f" submitted along with the request of {Addressee}, {District} for ",
+        EVdescriptionParagraph.add_run(f" submitted along with the request of {Addressee}, {District} for ",
                                          style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.").bold =True
         # evidenceDetailsParagraph2 = self.document.add_paragraph("", style='CompactParagraph')
@@ -269,16 +251,16 @@ class Report():
     #CREATE TABLE OF EVIDENCE INFORMATION
     def tableEvDetails(self, parcels):
 
-        tableEVDetails = self.document.add_table(rows=1, cols=4)
-        tableEVDetails.style = 'TableGridCustom'
-        tableEVDetails.allow_autofit = False
+        tableEVDetails = self.document.tables[1]
+        # tableEVDetails.style = 'TableGridCustom'
+        # tableEVDetails.allow_autofit = False
      
 
-        firstRowCells = tableEVDetails.rows[0].cells
-        firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
-        firstRowCells[1].paragraphs[0].add_run('Submitter &\nSubmission Date', style='TableHeading')
-        firstRowCells[2].paragraphs[0].add_run('FIR & PS', style='TableHeading')
-        firstRowCells[3].paragraphs[0].add_run('Evidence Details\nItem No#', style='TableHeading')
+        # firstRowCells = tableEVDetails.rows[0].cells
+        # firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
+        # firstRowCells[1].paragraphs[0].add_run('Submitter &\nSubmission Date', style='TableHeading')
+        # firstRowCells[2].paragraphs[0].add_run('FIR & PS', style='TableHeading')
+        # firstRowCells[3].paragraphs[0].add_run('Evidence Details\nItem No#', style='TableHeading')
         
         for i, parcel in enumerate(parcels, start=0):
 
@@ -291,11 +273,22 @@ class Report():
 
             if(i==0):
                 # for first entry in list of parcels first row must be created otherwise it will be added to heading
-                self.addRowInTableEvidenceDetails(parcelNumber=parcel[0], submissionDate=parcel[1],
-                                    submitterName=parcel[2], submitterRank=parcel[3], fir=parcel[4],
-                                    firDate=parcel[5], PS=parcel[12], District=parcel[13], quantityInWords=quantityInWords,
-                                    caliber=parcel[6], EVDetails=parcel[8], itemString=itemsOrItems,
-                                    itemNumbers=parcel[9], testFires=testFires , accused=accused)
+                self.addRowInTableEvidenceDetails(  parcelNumber=parcel[0],
+                                                    submissionDate=parcel[1],
+                                                    submitterName=parcel[2],
+                                                    submitterRank=parcel[3],
+                                                    fir=parcel[4],
+                                                    firDate=parcel[5],
+                                                    PS=parcel[12],
+                                                    District=parcel[13],
+                                                    quantityInWords=quantityInWords,
+                                                    caliber=parcel[6],
+                                                    EVDetails=parcel[8],
+                                                    itemString=itemsOrItems,
+                                                    itemNumbers=parcel[9],
+                                                    testFires=testFires,
+                                                    accused=accused
+                                                    )
 
             else:
                 #  NOTE parcels[i-1][0] Previous Parcel Number.
@@ -303,11 +296,22 @@ class Report():
                 if(parcel[0] != parcels[i-1][0]):
                     
                     # for first entry in list of parcels first row must be created otherwise it will be added to heading
-                    self.addRowInTableEvidenceDetails(parcelNumber=parcel[0], submissionDate=parcel[1],
-                                        submitterName=parcel[2], submitterRank=parcel[3], fir=parcel[4],
-                                        firDate=parcel[5], PS=parcel[12], District=parcel[13], quantityInWords=quantityInWords,
-                                        caliber=parcel[6], EVDetails=parcel[8], itemString=itemsOrItems,
-                                        itemNumbers=parcel[9], testFires=testFires , accused=accused)
+                    self.addRowInTableEvidenceDetails(  parcelNumber=parcel[0],
+                                                        submissionDate=parcel[1],
+                                                        submitterName=parcel[2],
+                                                        submitterRank=parcel[3],
+                                                        fir=parcel[4],
+                                                        firDate=parcel[5],
+                                                        PS=parcel[12],
+                                                        District=parcel[13],
+                                                        quantityInWords=quantityInWords,
+                                                        caliber=parcel[6],
+                                                        EVDetails=parcel[8],
+                                                        itemString=itemsOrItems,
+                                                        itemNumbers=parcel[9],
+                                                        testFires=testFires,
+                                                        accused=accused
+                                                    )
 
                 else:
                     # move to last row of table
@@ -316,21 +320,21 @@ class Report():
                     previousRowCells[3].paragraphs[0].add_run(f' and {quantityInWords} {parcel[6]} caliber {parcel[8]} '
                                     f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
 
-        # Column 1 PARCEL NO WIDTH
-        for cell in tableEVDetails.columns[0].cells:
-            cell.width = Mm(10)
+        # # Column 1 PARCEL NO WIDTH
+        # for cell in tableEVDetails.columns[0].cells:
+        #     cell.width = Mm(10)
 
-        # Column 2 WIDTH
-        for cell in tableEVDetails.columns[1].cells:
-            cell.width = Mm(35)
+        # # Column 2 WIDTH
+        # for cell in tableEVDetails.columns[1].cells:
+        #     cell.width = Mm(35)
         
-        # Column 4 WIDTH
-        for cell in tableEVDetails.columns[2].cells:
-            cell.width = Mm(35)
+        # # Column 4 WIDTH
+        # for cell in tableEVDetails.columns[2].cells:
+        #     cell.width = Mm(35)
 
-        # Column 4 WIDTH
-        for cell in tableEVDetails.columns[3].cells:
-            cell.width = Mm(90)
+        # # Column 4 WIDTH
+        # for cell in tableEVDetails.columns[3].cells:
+        #     cell.width = Mm(90)
 
         #This is to seprate next table from this one
         seprationPara = self.document.add_paragraph(style='CompactParagraph')
@@ -341,27 +345,27 @@ class Report():
 
     #CREATE TABLE OF ANALYSIS INFORMATION
     def tableAnalysisDetails(self, startDate : str, endDate : str):
-        tableAnalysis = self.document.add_table(rows=2, cols=3)
-        tableAnalysis.style = 'TableGridCustom'
-        tableAnalysis.allow_autofit = False
+        tableAnalysis = self.document.tables[2]
+        # tableAnalysis.style = 'TableGridCustom'
+        # tableAnalysis.allow_autofit = False
         #Length of table is 180mm
-        tableAnalysis.rows[0].cells[0].width = Mm(10)
-        tableAnalysis.rows[0].cells[1].width = Mm(50)
-        tableAnalysis.rows[0].cells[2].width = Mm(90)
-        tableAnalysis.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        tableAnalysis.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        tableAnalysis.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        # tableAnalysis.rows[0].cells[0].width = Mm(10)
+        # tableAnalysis.rows[0].cells[1].width = Mm(50)
+        # tableAnalysis.rows[0].cells[2].width = Mm(90)
+        # tableAnalysis.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        # tableAnalysis.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        # tableAnalysis.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
 
-        firstRowCells = tableAnalysis.rows[0].cells
-        firstRowCells[0].paragraphs[0].add_run('Analysis Start Date',style='TableHeading')
-        firstRowCells[1].paragraphs[0].add_run('Analysis Completion Date', style='TableHeading')
-        firstRowCells[2].paragraphs[0].add_run('Examination Method/ Tests Performed', style='TableHeading')
+        # firstRowCells = tableAnalysis.rows[0].cells
+        # firstRowCells[0].paragraphs[0].add_run('Analysis Start Date',style='TableHeading')
+        # firstRowCells[1].paragraphs[0].add_run('Analysis Completion Date', style='TableHeading')
+        # firstRowCells[2].paragraphs[0].add_run('Examination Method/ Tests Performed', style='TableHeading')
 
         secondRowCells = tableAnalysis.rows[1].cells
         secondRowCells[0].paragraphs[0].add_run(f'{startDate}')
         secondRowCells[1].paragraphs[0].add_run(f'{endDate}')
-        secondRowCells[2].paragraphs[0].add_run('Physical Examination, Comparison Microscopy, Test Firing and ABIS Scanning',
-                                                style='SimpleText')
+        # secondRowCells[2].paragraphs[0].add_run('Physical Examination, Comparison Microscopy, Test Firing and ABIS Scanning',
+        #                                         style='SimpleText')
 
         # adjust column 1 length
         for cell in tableAnalysis.columns[0].cells:
@@ -386,7 +390,7 @@ class Report():
     #CREATE NOTE(S)
     def paraNotes(self):
         notesHeading = self.document.add_paragraph("", style="BoldItalic")
-        notesHeading.add_run(f'Note(s): {note}').font.size = Pt(11)
+        notesHeading.add_run(f'Note(s):').font.size = Pt(11)
 
         # listNotes = ['This is the first note.', 'This is the second note.']
         # for i in listNotes:
@@ -396,7 +400,7 @@ class Report():
     def paraDisposition(self):
         dispositionHeading = self.document.add_paragraph("", style="BoldUnderline")
         dispositionHeading.add_run('Disposition of Evidence:').font.size = Pt(11)
-        dispositionParagraph = self.document.add_paragraph(f'{disposition}', style='CompactParagraph')
+        dispositionParagraph = self.document.add_paragraph(f'', style='CompactParagraph')
         dispositionParagraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         EORParagraph = self.document.add_paragraph('', style='Bold')
         EORParagraph.add_run('X...End of Report...X').font.size = Pt(12)
