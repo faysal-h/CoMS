@@ -1,3 +1,4 @@
+import pyodbc
 import os
 import urllib
 import pandas as pd
@@ -23,6 +24,4 @@ df = pd.read_sql_query(queryCaseDetails, engine)
 print(df)
 
 # Test if access driver engine installed
-import pyodbc
 [x for x in pyodbc.drivers() if x.startswith('Microsoft Access Driver')]
-

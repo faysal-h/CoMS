@@ -9,10 +9,6 @@ from sqlalchemy import table
 
 logging.basicConfig(level=logging.DEBUG)
 
-note = ("The results in this report relate only to the item(s) as"
-        " received and tested. Each received item is marked with case number,"
-        " item number and duly signed.")
-
 
 '''
 NOTE There should be a template docx in the folder with the following custom sytles
@@ -20,15 +16,17 @@ BulletCustomNormal , type= Paragraph, bullets enabled
 TableGridCustom ,   type = Table
 NOTE The page numbering field should also be enabled as page numbering is not supported at this moment.
 '''
+
+
 class CPRDocument():
     def __init__(self):
         self.document = Document('./modules/templates/cpr.docx')
 
-       
-    #NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
+    # NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
+
     def add_styles(self):
         styles = self.document.styles
-        
+
         style1 = styles.add_style('Bold', WD_STYLE_TYPE.PARAGRAPH)
         style1.base_style = styles["Normal"]
         fontOfStyle1 = style1.font
@@ -64,7 +62,7 @@ class CPRDocument():
         paragraphFormat.space_after = Pt(0)
         paragraphFormat.line_spacing = 1
         #paragraphFormat.left_indent = Mm(2)
-        
+
         style4 = styles.add_style('TableHeading', WD_STYLE_TYPE.CHARACTER)
         style4.base_style = styles["Normal"]
         fontOfStyle4 = style4.font
@@ -91,7 +89,7 @@ class CPRDocument():
 
         return print('Custom Styles added to the word self.document.')
 
-    #CREATE A SECTION AND SET MARGINS OF IT
+    # CREATE A SECTION AND SET MARGINS OF IT
     def PageLayout(self, size):
         self.size = size
         if self.size == "A4":
@@ -110,11 +108,10 @@ class CPRDocument():
             return 'First Section of A4 pages size is created.'
         else:
             return 'Page size not supported.'
-    
 
-    #CASE NUMBER TABLE
-    def addRowInMainTable(self, Serial:int, CaseNo:str, FIR:str, FIRDate:str, PS:str, District:str):
-        
+    # CASE NUMBER TABLE
+    def addRowInMainTable(self, Serial: int, CaseNo: str, FIR: str, FIRDate: str, PS: str, District: str):
+
         tableMain = self.document.tables[0]
 
         newRow = tableMain.add_row().cells
@@ -124,15 +121,14 @@ class CPRDocument():
         newRow[4].paragraphs[0].add_run(f'{FIR} ({FIRDate})')
         newRow[5].paragraphs[0].add_run(f'{PS.title()}, {District.title()}')
 
-
-
     def save(self, saveLocation):
         self.document.save(saveLocation)
+
 
 if __name__ == '__main__':
     testSheet = CPRDocument()
 
-    table = testSheet.document.tables[0]  
+    table = testSheet.document.tables[0]
     row = table.add_row().cells
     row[0].paragraphs[0].add_run(f'123456')
     # testReport.PageLayout('A4')

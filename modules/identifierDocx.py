@@ -9,20 +9,21 @@ from docx.enum.style import WD_STYLE_TYPE
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 class IdentifiersDocument():
     def __init__(self) -> None:
         self.document = Document()
         self.createTwoColumnsPage()
-        
+
     def createTwoColumnsPage(self):
         section = self.document.sections[0]
         sectPr = section._sectPr
         cols = sectPr.xpath('./w:cols')[0]
-        cols.set(qn('w:num'),'2')
+        cols.set(qn('w:num'), '2')
 
     def add_styles(self):
         styles = self.document.styles
-        
+
         style1 = styles.add_style('Bold16', WD_STYLE_TYPE.PARAGRAPH)
         style1.base_style = styles["Normal"]
         fontOfStyle1 = style1.font
@@ -92,6 +93,7 @@ class IdentifiersDocument():
         id.add_run(f'\t{AddressTo},\n').font.size = Pt(13)
         id.add_run(f'\t{district}.\n').font.size = Pt(13)
         id.add_run('').font.size = Pt(11)
+
 
 if __name__ == '__main__':
 

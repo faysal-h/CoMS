@@ -54,7 +54,7 @@ queryCOC = '''SELECT CaseDetails.caseFTM, CaseDetails.[frmGRLDate], CaseDetails.
                 WHERE (((CaseDetails.caseFTM)='''
 
 
-#TODO Need to change Connectable ENGINE to SQLAlchemy
+# TODO Need to change Connectable ENGINE to SQLAlchemy
 class AccessFile():
     def __init__(self) -> None:
         self.openConnection()
@@ -62,17 +62,18 @@ class AccessFile():
     def openConnection(self):
         try:
             connection_string = (
-                                r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
-                                f"DBQ={dbPath};"
-                                r"ExtendedAnsiSQL=1;"
-                                )
+                r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
+                f"DBQ={dbPath};"
+                r"ExtendedAnsiSQL=1;"
+            )
             connection_uri = f"access+pyodbc:///?odbc_connect={urllib.parse.quote_plus(connection_string)}"
             self.engine = create_engine(connection_uri)
-        
+
             logging.info('Connection to Database Established.')
-        
+
         except ValueError as e:
-            logging.error(f"connection to database is not established.\n Error is : {e}")
+            logging.error(
+                f"connection to database is not established.\n Error is : {e}")
 
     # def closeConnection(self):
     #     self.cnxn.close()
@@ -80,23 +81,26 @@ class AccessFile():
     def readQuery(self, Query):
         df = pd.read_sql_query(Query, self.engine)
         if(df.empty):
-            logging.error("Reading Query Failure. No data found against this case number.")
+            logging.error(
+                "Reading Query Failure. No data found against this case number.")
             return df
         else:
-            logging.info("Reading Query Success. Data found against this case number.")
+            logging.info(
+                "Reading Query Success. Data found against this case number.")
             return df
 
 
 class DataFrames():
     '''This class and its child classess read queries and manipulate data in the form of 
         PANDAS DATAFRAMES'''
+
     def __init__(self, ftmNo) -> None:
         self.ftmNo = ftmNo
         self.database = AccessFile()
 
-    def getTableByFtmNo(self, queryToRead:str) -> pd.DataFrame:
+    def getTableByFtmNo(self, queryToRead: str) -> pd.DataFrame:
         return self.database.readQuery(f"{queryToRead} {self.ftmNo}));")
-        
+
     def checkIfCaseExist(self) -> bool:
         tempDF = self.database.readQuery(f"{queryCaseDetails} {self.ftmNo}));")
         if(tempDF.empty):
@@ -106,7 +110,7 @@ class DataFrames():
 
     def checkIfBatcDateExist(self, BatchDate) -> bool:
         tempDF = self.database.readQuery(
-                    f"{queryCaseDetailsForIdentifiersDate} WHERE (((CaseDetails.Batch)=#{BatchDate}#))")
+            f"{queryCaseDetailsForIdentifiersDate} WHERE (((CaseDetails.Batch)=#{BatchDate}#))")
         if(tempDF.empty):
             return False
         else:
@@ -121,21 +125,21 @@ class CaseDetailsDF(DataFrames):
         self.caseDetailsDF = self.getTableByFtmNo(queryCaseDetails)
 
     def getCaseNoParts(self) -> tuple:
-        return self.caseDetailsDF.iloc[0]['caseYear'], self.caseDetailsDF.iloc[0]['casePFSA'], self.caseDetailsDF.iloc[0]['caseFTM'] 
+        return self.caseDetailsDF.iloc[0]['caseYear'], self.caseDetailsDF.iloc[0]['casePFSA'], self.caseDetailsDF.iloc[0]['caseFTM']
 
     def getValuefrmCaseDetails(self, columnName, indexNumber=0) -> str:
         return self.caseDetailsDF.iloc[indexNumber][columnName]
-    
+
     def getBatchDate(self) -> datetime:
         return self.caseDetailsDF.iloc[0]['Batch'].to_pydatetime()
-        
+
 
 class CoCDF(DataFrames):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
 
         self.cocDF = self.getTableByFtmNo(queryCOC)
-    
+
     def getCOCdate(self, whichTypeOfDate) -> datetime:
 
         if(self.cocDF.empty):
@@ -148,22 +152,22 @@ class CoCDF(DataFrames):
             else:
                 return self.cocDF.iloc[0][whichTypeOfDate].to_pydatetime()
 
-
-    def getCOCdateString(self, whichTypeOfDate : str) -> str:
-        dateToReturn = self.getCOCdate( whichTypeOfDate)
+    def getCOCdateString(self, whichTypeOfDate: str) -> str:
+        dateToReturn = self.getCOCdate(whichTypeOfDate)
         if((type(dateToReturn) == type(pd.NaT)) or dateToReturn == ""):
             return ""
         else:
             return dateToReturn.strftime(customDateFormat)
-            
+
 
 class ParcelsDF(DataFrames):
     def __init__(self, ftmNo) -> None:
         super().__init__(ftmNo)
-        self.parcelsDF = (self.getTableByFtmNo(queryParcelsDetails)).sort_values(by=['ParcelNo'])
+        self.parcelsDF = (self.getTableByFtmNo(
+            queryParcelsDetails)).sort_values(by=['ParcelNo'])
 
     # Filters and Slices dataframe
-    def getFirearmsOrAmmoDF(self, typeOfItems:list) -> pd.DataFrame:
+    def getFirearmsOrAmmoDF(self, typeOfItems: list) -> pd.DataFrame:
         df1 = self.parcelsDF[self.parcelsDF['EV'].isin(typeOfItems)]
         return df1[['ParcelNo', 'EVCaliber', 'EVType', 'EV', 'ItemNo', 'Quantity', 'Notes']]
 
@@ -187,13 +191,16 @@ class ParcelsDF(DataFrames):
 
     # Manipulate dataframe for case Details in processing sheet
     def getParcelsDetailsForProcessingSheet(self):
-        return self.parcelsDF.drop(['CaseNoFK', 'SubmissionDate', 'SubmitterName','Rank', 'FIR', 'FIRDate' ],
-                                             axis=1).sort_values('ParcelNo').values.tolist()
+        return self.parcelsDF.drop(['CaseNoFK', 'SubmissionDate', 'SubmitterName', 'Rank', 'FIR', 'FIRDate'],
+                                   axis=1).sort_values('ParcelNo').values.tolist()
 
     def getParcelDetailsForReport(self):
-        parcelsForReport = self.parcelsDF.drop(['CaseNoFK'], axis=1).sort_values('ParcelNo')
-        parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
-        parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
+        parcelsForReport = self.parcelsDF.drop(
+            ['CaseNoFK'], axis=1).sort_values('ParcelNo')
+        parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(
+            lambda x: x.date().strftime(customDateFormat)).values.tolist()
+        parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(
+            lambda x: x.date().strftime(customDateFormat)).values.tolist()
         return parcelsForReport.values.tolist()
 
 
@@ -203,27 +210,31 @@ class IdentifiersDF(DataFrames):
         super().__init__(ftmNo)
         self.BatchDate = BatchDate
         if (self.BatchDate) != parse(BatchDate, fuzzy=False, dayfirst=True):
-            self.identifiersDF = self.getTableByBatchDate(queryCaseDetailsForIdentifiersDate)
+            self.identifiersDF = self.getTableByBatchDate(
+                queryCaseDetailsForIdentifiersDate)
         else:
-            self.identifiersDF = self.getTableByFtmNo(queryCaseDetailsForIdentifiersFtm)
+            self.identifiersDF = self.getTableByFtmNo(
+                queryCaseDetailsForIdentifiersFtm)
 
-    def getTableByBatchDate(self, queryToRead:str) -> pd.DataFrame:
+    def getTableByBatchDate(self, queryToRead: str) -> pd.DataFrame:
         # extracts a dataframe contain values for creating identifiers.
         x = self.database.readQuery(
             f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='last')
 
         # converts FIR date to string format and replaces original column
-        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
+        x['FIRDate'] = x['FIRDate'].apply(
+            lambda x: x.date().strftime(customDateFormat)).values.tolist()
 
         return x
 
-    def getTableByFtmNo(self, queryToRead:str) -> pd.DataFrame:
+    def getTableByFtmNo(self, queryToRead: str) -> pd.DataFrame:
         # extracts a dataframe contain values for creating identifiers.
         x = self.database.readQuery(
             f"{queryToRead} {self.ftmNo}));").drop_duplicates(subset=['caseFTM'], keep='last')
 
         # converts FIR date to string format and replaces original column
-        x['FIRDate'] = x['FIRDate'].apply(lambda x: x.date().strftime(customDateFormat)).values.tolist()
+        x['FIRDate'] = x['FIRDate'].apply(
+            lambda x: x.date().strftime(customDateFormat)).values.tolist()
 
         return x
 
@@ -247,7 +258,6 @@ if __name__ == "__main__":
     # print(x)
     # # f = i.getFirDateByBatchDate()
     # # print(i.combineCaseDetailsWithFIRDate())
-
 
     # c = CoCDF(123456)
     # print(c.cocDF)
