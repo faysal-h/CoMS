@@ -211,30 +211,31 @@ class Report():
     #CASE NUMBER TABLE
     def tableCaseDetails(self, caseNo1, caseNo2, addressee, district):
         
-        tableCaseDetails = self.document.add_table(rows=1, cols=4)
+        tableCaseDetails = self.document.tables[0]
         #TABLE STYLE
         #tableCaseDetails.columns[0].width = Cm(1)
-        tableCaseDetails.style = 'TableGridCustom'
-        tableCaseDetails.allow_autofit =False
+        # tableCaseDetails.style = 'TableGridCustom'
+        # tableCaseDetails.allow_autofit =False
+        
         #Length of table is 6309360
-        tableCaseDetails.rows[0].cells[0].width = Mm(32)
-        tableCaseDetails.rows[0].cells[1].width = Mm(70)
-        tableCaseDetails.rows[0].cells[2].width = Mm(32)
-        tableCaseDetails.rows[0].cells[3].width = Mm(52)
-        tableCaseDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableCaseDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableCaseDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
-        tableCaseDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[0].width = Mm(32)
+        # tableCaseDetails.rows[0].cells[1].width = Mm(70)
+        # tableCaseDetails.rows[0].cells[2].width = Mm(32)
+        # tableCaseDetails.rows[0].cells[3].width = Mm(52)
+        # tableCaseDetails.rows[0].cells[0].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[1].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[2].vertical_alignment = WD_ALIGN_VERTICAL.TOP
+        # tableCaseDetails.rows[0].cells[3].vertical_alignment = WD_ALIGN_VERTICAL.TOP
 
         #TABLE VALUES
-        firstRowCells = tableCaseDetails.rows[0].cells
-        firstRowCells[0].paragraphs[0].add_run('Agency Case#',style='TableHeading')
+        firstRowCells = tableCaseDetails.rows[1].cells
+        # firstRowCells[0].paragraphs[0].add_run('Agency Case#',style='TableHeading')
         firstRowCells[1].paragraphs[0].add_run(f'{caseNo1}', style='SimpleText')
         if(caseNo2 in [None, "", "None"] ):
             pass
         else:
             firstRowCells[1].paragraphs[0].add_run(f'\n{caseNo2}', style='SimpleText')
-        firstRowCells[2].paragraphs[0].add_run('Attention To', style='TableHeading')
+        # firstRowCells[2].paragraphs[0].add_run('Attention To', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run(f'{addressee}, {district}.', style='SimpleText')
 
     def paraEvDetail(self, Addressee, District, items, testRequest):
