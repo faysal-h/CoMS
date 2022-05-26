@@ -264,16 +264,16 @@ class Report():
     #CREATE TABLE OF EVIDENCE INFORMATION
     def tableEvDetails(self, parcels):
 
-        tableEVDetails = self.document.add_table(rows=1, cols=4)
-        tableEVDetails.style = 'TableGridCustom'
-        tableEVDetails.allow_autofit = False
+        tableEVDetails = self.document.tables[1]
+        # tableEVDetails.style = 'TableGridCustom'
+        # tableEVDetails.allow_autofit = False
      
 
-        firstRowCells = tableEVDetails.rows[0].cells
-        firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
-        firstRowCells[1].paragraphs[0].add_run('Submitter &\nSubmission Date', style='TableHeading')
-        firstRowCells[2].paragraphs[0].add_run('FIR & PS', style='TableHeading')
-        firstRowCells[3].paragraphs[0].add_run('Evidence Details\nItem No#', style='TableHeading')
+        # firstRowCells = tableEVDetails.rows[0].cells
+        # firstRowCells[0].paragraphs[0].add_run('Parcel#',style='TableHeading')
+        # firstRowCells[1].paragraphs[0].add_run('Submitter &\nSubmission Date', style='TableHeading')
+        # firstRowCells[2].paragraphs[0].add_run('FIR & PS', style='TableHeading')
+        # firstRowCells[3].paragraphs[0].add_run('Evidence Details\nItem No#', style='TableHeading')
         
         for i, parcel in enumerate(parcels, start=0):
 
@@ -286,11 +286,22 @@ class Report():
 
             if(i==0):
                 # for first entry in list of parcels first row must be created otherwise it will be added to heading
-                self.addRowInTableEvidenceDetails(parcelNumber=parcel[0], submissionDate=parcel[1],
-                                    submitterName=parcel[2], submitterRank=parcel[3], fir=parcel[4],
-                                    firDate=parcel[5], PS=parcel[12], District=parcel[13], quantityInWords=quantityInWords,
-                                    caliber=parcel[6], EVDetails=parcel[8], itemString=itemsOrItems,
-                                    itemNumbers=parcel[9], testFires=testFires , accused=accused)
+                self.addRowInTableEvidenceDetails(  parcelNumber=parcel[0],
+                                                    submissionDate=parcel[1],
+                                                    submitterName=parcel[2],
+                                                    submitterRank=parcel[3],
+                                                    fir=parcel[4],
+                                                    firDate=parcel[5],
+                                                    PS=parcel[12],
+                                                    District=parcel[13],
+                                                    quantityInWords=quantityInWords,
+                                                    caliber=parcel[6],
+                                                    EVDetails=parcel[8],
+                                                    itemString=itemsOrItems,
+                                                    itemNumbers=parcel[9],
+                                                    testFires=testFires,
+                                                    accused=accused
+                                                    )
 
             else:
                 #  NOTE parcels[i-1][0] Previous Parcel Number.
@@ -298,11 +309,22 @@ class Report():
                 if(parcel[0] != parcels[i-1][0]):
                     
                     # for first entry in list of parcels first row must be created otherwise it will be added to heading
-                    self.addRowInTableEvidenceDetails(parcelNumber=parcel[0], submissionDate=parcel[1],
-                                        submitterName=parcel[2], submitterRank=parcel[3], fir=parcel[4],
-                                        firDate=parcel[5], PS=parcel[12], District=parcel[13], quantityInWords=quantityInWords,
-                                        caliber=parcel[6], EVDetails=parcel[8], itemString=itemsOrItems,
-                                        itemNumbers=parcel[9], testFires=testFires , accused=accused)
+                    self.addRowInTableEvidenceDetails(  parcelNumber=parcel[0],
+                                                        submissionDate=parcel[1],
+                                                        submitterName=parcel[2],
+                                                        submitterRank=parcel[3],
+                                                        fir=parcel[4],
+                                                        firDate=parcel[5],
+                                                        PS=parcel[12],
+                                                        District=parcel[13],
+                                                        quantityInWords=quantityInWords,
+                                                        caliber=parcel[6],
+                                                        EVDetails=parcel[8],
+                                                        itemString=itemsOrItems,
+                                                        itemNumbers=parcel[9],
+                                                        testFires=testFires,
+                                                        accused=accused
+                                                    )
 
                 else:
                     # move to last row of table
@@ -311,21 +333,21 @@ class Report():
                     previousRowCells[3].paragraphs[0].add_run(f' and {quantityInWords} {parcel[6]} caliber {parcel[8]} '
                                     f'({itemsOrItems} {parcel[9]}{testFires}){accused}', style='SimpleText')
 
-        # Column 1 PARCEL NO WIDTH
-        for cell in tableEVDetails.columns[0].cells:
-            cell.width = Mm(10)
+        # # Column 1 PARCEL NO WIDTH
+        # for cell in tableEVDetails.columns[0].cells:
+        #     cell.width = Mm(10)
 
-        # Column 2 WIDTH
-        for cell in tableEVDetails.columns[1].cells:
-            cell.width = Mm(35)
+        # # Column 2 WIDTH
+        # for cell in tableEVDetails.columns[1].cells:
+        #     cell.width = Mm(35)
         
-        # Column 4 WIDTH
-        for cell in tableEVDetails.columns[2].cells:
-            cell.width = Mm(35)
+        # # Column 4 WIDTH
+        # for cell in tableEVDetails.columns[2].cells:
+        #     cell.width = Mm(35)
 
-        # Column 4 WIDTH
-        for cell in tableEVDetails.columns[3].cells:
-            cell.width = Mm(90)
+        # # Column 4 WIDTH
+        # for cell in tableEVDetails.columns[3].cells:
+        #     cell.width = Mm(90)
 
         #This is to seprate next table from this one
         seprationPara = self.document.add_paragraph(style='CompactParagraph')
