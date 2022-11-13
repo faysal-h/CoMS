@@ -12,7 +12,7 @@ import pandas as pd
 
 logging.basicConfig(level=logging.INFO)
 
-dbPath = os.path.join(os.getcwd(), "CMSdatabase.accdb")
+DB_PATH = os.path.join(os.getcwd(), "CCMSdatabase.accdb")
 
 ammo = ['bullet', 'metal piece', 'cartridge case']
 
@@ -63,7 +63,7 @@ class AccessFile():
         try:
             connection_string = (
                 r"DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};"
-                f"DBQ={dbPath};"
+                f"DBQ={DB_PATH};"
                 r"ExtendedAnsiSQL=1;"
             )
             connection_uri = f"access+pyodbc:///?odbc_connect={urllib.parse.quote_plus(connection_string)}"
