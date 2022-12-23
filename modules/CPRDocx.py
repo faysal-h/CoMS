@@ -7,6 +7,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
 from sqlalchemy import table
 
+from modules.CusPath import UserPaths
+
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -20,7 +22,7 @@ NOTE The page numbering field should also be enabled as page numbering is not su
 
 class CPRDocument():
     def __init__(self):
-        self.document = Document('./modules/templates/cpr.docx')
+        self.document = Document(UserPaths.cprTemplatePath)
 
     # NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
 
@@ -110,7 +112,7 @@ class CPRDocument():
             return 'Page size not supported.'
 
     # CASE NUMBER TABLE
-    def addRowInMainTable(self, Serial: int, CaseNo: str, FIR: str, FIRDate: str, PS: str, District: str):
+    def addRowInMainTable(self, Serial: int, CaseNo: str, FIR: str, PS: str, District: str):
 
         tableMain = self.document.tables[0]
 
@@ -118,7 +120,7 @@ class CPRDocument():
 
         newRow[0].paragraphs[0].add_run(Serial)
         newRow[1].paragraphs[0].add_run(CaseNo)
-        newRow[4].paragraphs[0].add_run(f'{FIR} ({FIRDate})')
+        newRow[4].paragraphs[0].add_run(f'{FIR}')
         newRow[5].paragraphs[0].add_run(f'{PS.title()}, {District.title()}')
 
     def save(self, saveLocation):

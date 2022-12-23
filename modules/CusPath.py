@@ -11,6 +11,7 @@ class UserPaths():
     cartridgeTemplatePath = os.path.join(os.getcwd(), "templates\\cartridge.docx")
     bulletTemplatePath = os.path.join(os.getcwd(), "templates\\bullet.docx")
     reportTemplatePath = './templates/template.docx'
+    cprTemplatePath = './templates/cpr.docx'
 
 
     def __init__(self) -> None:
