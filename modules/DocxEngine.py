@@ -1,17 +1,18 @@
 import os
+import re
 import logging
 
 import inflect
 from docxtpl import DocxTemplate
 
-from modules.CusPath import UserPaths
+from CusPath import UserPaths
 
-from modules.AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
-from modules.AccessToDF import IdentifiersDF
+from AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
+from AccessToDF import IdentifiersDF
 
-from modules.identifierDocx import IdentifiersDocument
-from modules.CPRDocx import CPRDocument
-from modules.reportDocx import Report
+from identifierDocx import IdentifiersDocument
+from CPRDocx import CPRDocument
+from reportDocx import Report
 
 processingTemplatePath = os.path.join(
     os.getcwd(), "modules\\templates\\processing.docx")
@@ -194,8 +195,6 @@ class Sheets():
         return iE.number_to_words(digit)
 
 # This classs manipulate data from DataFrames and varivale of COC, Case Details, Parcels
-
-
 class ProcessingSheetProcessor(Sheets):
     def __init__(self, ftmNumber) -> None:
         super().__init__(ftmNumber)
@@ -207,11 +206,109 @@ class ProcessingSheetProcessor(Sheets):
 
         self.noOfParcels = self.ParcelsDF.getNoOfParcels()
         # Ammunition details in COC
-        self.ammoItems = self.ParcelsDF.getAmmoItemNos() + ', Test Fires'
+        self.ammoItems = self._ammoItemsNoForCOC()
+        
         # Total items in last cell of COC
-        self.totalItemsNos = self.ParcelsDF.getAllItemNos() + ', Test Fires'
+        self.totalItemsNos = self._firearmItemsNoForCOC() + ', ' + self.ammoItems
+        
         # Create instance of DOCX TEMPLATE for PROCESSING SHEET
         self.processingDocTemplate = DocxTemplate(processingTemplatePath)
+
+
+    def __searchMinMaxNoInString(self, item:str) :
+        if item not in ['', None]:
+            result = [int(e) for e in re.split("[^0-9]", item) if e != '']
+            logging.info(f'result in min and max is {result}')
+            return min(result), max(result)
+        else:
+            return ''
+
+    def __cocItemsStringMaker(self, searchedItems:list, itemString:list, itemLetter:str):
+        #This method append items to items string list      
+        if len(searchedItems) == 0:
+            pass
+        else:
+            if searchedItems[0] == searchedItems[1]:
+                itemString.append(f'{itemLetter}{min(searchedItems)}')
+            else:
+                itemString.append(f'{itemLetter}{min(searchedItems)} to {itemLetter}{max(searchedItems)}')
+
+        return itemString
+
+    def _ammoItemsNoForCOC(self) -> str:
+        itemsList = self.ParcelsDF.getAmmoItemNos()
+        logging.info(f'list of items are {itemsList}')
+        
+        # Ammo list to store items no
+        cc = []
+        ss = []
+        mm = []
+        bb = []
+
+        # Separate different ammo items in two relevant list
+        if len(itemsList) > 0:
+            for i in itemsList:
+                if i.capitalize().startswith('C'):
+                    cc.append(i)
+                elif i.capitalize().startswith('S'):
+                    ss.append(i)
+                elif i.capitalize().startswith('M'):
+                    mm.append(i)
+                elif i.capitalize().startswith('B'):
+                    bb.append(i)
+                else:
+                    pass
+
+        
+        cc = self.__searchMinMaxNoInString(' '.join(cc))
+        ss = self.__searchMinMaxNoInString(' '.join(ss))
+        mm = self.__searchMinMaxNoInString(' '.join(mm))
+        bb = self.__searchMinMaxNoInString(' '.join(bb))
+
+        string = []
+
+        self.__cocItemsStringMaker(cc, string, 'C')
+        self.__cocItemsStringMaker(ss, string, 'S')
+        self.__cocItemsStringMaker(bb, string, 'B')
+        self.__cocItemsStringMaker(mm, string, 'M')
+        logging.info(f'Ammo Items string list is {string}')
+        return ', '.join(string) + ', Test Fires'
+
+    def _firearmItemsNoForCOC(self) -> str:
+        itemsList = self.ParcelsDF.getFirearmsItemNos()
+        # Ammo list to store items no
+        p = []
+        s = []
+        r = []
+        m = []
+
+        # Separate different ammo items in two relevant list
+        if len(itemsList) > 0:
+            for i in itemsList:
+                if i.capitalize().startswith('P'):
+                    p.append(i)
+                elif i.capitalize().startswith('S'):
+                    s.append(i)
+                elif i.capitalize().startswith('R'):
+                    r.append(i)
+                elif i.capitalize().startswith('M'):
+                    r.append(i)
+                else:
+                    pass
+
+        p = self.__searchMinMaxNoInString(' '.join(p))
+        s = self.__searchMinMaxNoInString(' '.join(s))
+        r = self.__searchMinMaxNoInString(' '.join(r))
+        m = self.__searchMinMaxNoInString(' '.join(m))
+
+        string = []
+
+        self.__cocItemsStringMaker(p, string, 'P')
+        self.__cocItemsStringMaker(s, string, 'S')
+        self.__cocItemsStringMaker(r, string, 'R')
+        self.__cocItemsStringMaker(m, string, 'M')
+
+        return ', '.join(string)
 
     def findTypeOfCOC(self):
         bs = self.Balscanner
@@ -313,7 +410,7 @@ class ProcessingSheetProcessor(Sheets):
                 'P1': "CaseWork",            # PURPOSE COLUMN
                 'P2': "BalScan",
                 'P3': "BalScan Done",
-                'P4': "Case DOne",
+                'P4': "Case Done",
                 'P5': "",
                 'P6': "",
             }
@@ -417,7 +514,7 @@ class ProcessingSheetProcessor(Sheets):
         else:
             return (f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}")
 
-    # gets LIST of parcels in case and used it to combine in a single string.
+    # gets LIST of parcels in case and combine it to a single string.
     def getAndSetParcels(self):
         parcels = self.ParcelsDF.getParcelsDetailsForProcessingSheet()
 
@@ -704,9 +801,11 @@ if __name__ == "__main__":
     # i.FileIdentifierMaker()
     # i.EnvelopsMaker()
 
-    # p = ProcessingSheetProcessor(123456)
-    # print(p.currentCaseFolderPath)
-    # print(p.proceesingSheetMaker())
+    p = ProcessingSheetProcessor(123456)
+    print(p.currentCaseFolderPath)
+    print(p._ammoItemsNoForCOC())
+    print(p.proceesingSheetMaker())
+    os.system(f"start {p.currentCaseFolderPath}")
     # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
     # f = FirearmsProcessor(123456)
@@ -717,8 +816,7 @@ if __name__ == "__main__":
     # # print(c.cartridges)
     # c.cartridgeSheetMaker()
 
-    b = BulletProcessor(123456)
-    print(len(b.bullets))
+    # b = BulletProcessor(123456)
+    # print(len(b.bullets))
 
     # print(UserPaths().checkNcreateCaseWorkDirectory())
-    # os.system(f"start {r.currentCaseFolderPath}")

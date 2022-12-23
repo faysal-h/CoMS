@@ -177,10 +177,17 @@ class ParcelsDF(DataFrames):
     def getValuefrmParcels(self, columnName, indexNumber):
         return self.parcelsDF.iloc[indexNumber][columnName]
 
-    def getAmmoItemNos(self):
+    def getAmmoItemNos(self) -> list:
         ammoItemsDF = self.parcelsDF[self.parcelsDF['EVType'].isin(['ammo'])]
         ammoItemsList = ammoItemsDF['ItemNo']
-        return (', ').join(ammoItemsList)
+        # return (', ').join(ammoItemsList)
+        return ammoItemsList.to_list()
+
+    def getFirearmsItemNos(self) -> list:
+        firearmItemsDF = self.parcelsDF[self.parcelsDF['EVType'].isin(['firearm'])]
+        firearmItemsList = firearmItemsDF['ItemNo']
+        # return (', ').join(ammoItemsList)
+        return firearmItemsList.to_list()
 
     def getAllItemNos(self):
         items = self.parcelsDF['ItemNo'].values.tolist()
@@ -219,7 +226,7 @@ class IdentifiersDF(DataFrames):
     def getTableByBatchDate(self, queryToRead: str) -> pd.DataFrame:
         # extracts a dataframe contain values for creating identifiers.
         x = self.database.readQuery(
-            f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='last')
+            f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='first')
 
         # converts FIR date to string format and replaces original column
         x['FIRDate'] = x['FIRDate'].apply(
@@ -248,9 +255,9 @@ if __name__ == "__main__":
     # print(type(d.getBatchDate()))
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
-    p = ParcelsDF(108185)
+    p = ParcelsDF(135180)
 
-    print(p.parcelsDF)
+    print(p.getFirearmsItemNos())
 
     # i = IdentifiersDF('01/03')
     # print(i.identifiersDF)
@@ -259,16 +266,4 @@ if __name__ == "__main__":
     # # f = i.getFirDateByBatchDate()
     # # print(i.combineCaseDetailsWithFIRDate())
 
-    # c = CoCDF(123456)
-    # print(c.cocDF)
-    # print(c.cocDF.empty)
-    # print(c.getCOCdateString('ComparisonCompDate'))
-    # # print(c.getCOCdateString('BalScanStartDate'))
-    # bsDate = c.getCOCdate("BalScanStartDate")
-    # print('bsDate')
-    # print(bsDate)
-    # # print(isinstance(bsDate, datetime))
-    # print(type(c.getCOCdate("BalScanStartDate")))
-    # print(type(c.getCOCdate("frmGRLDate")))
-    # print(c.getCOCdate("BalScanStartDate"))
-    # print(c.getCOCdate("frmGRLDate"))
+
