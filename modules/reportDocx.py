@@ -9,6 +9,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_LINE_SPACING
 
+from modules.CusPath import UserPaths
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -25,7 +27,7 @@ NOTE The page numbering field should also be enabled as page numbering is not su
 class Report():
 
     def __init__(self):
-        self.document = Document('./modules/templates/template.docx')
+        self.document = Document(UserPaths.reportTemplatePath)
 
     def testFiresStatementFromItemNo(self, EvType: str, itemNo: str):
         itemsToCheck = {

@@ -5,23 +5,15 @@ import logging
 import inflect
 from docxtpl import DocxTemplate
 
-from CusPath import UserPaths
+from modules.CusPath import UserPaths
 
-from AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
-from AccessToDF import IdentifiersDF
+from modules.AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
+from modules.AccessToDF import IdentifiersDF
 
-from identifierDocx import IdentifiersDocument
-from CPRDocx import CPRDocument
-from reportDocx import Report
+from modules.identifierDocx import IdentifiersDocument
+from modules.CPRDocx import CPRDocument
+from modules.reportDocx import Report
 
-processingTemplatePath = os.path.join(
-    os.getcwd(), "modules\\templates\\processing.docx")
-firearmsTemplatePath = os.path.join(
-    os.getcwd(), "modules\\templates\\firearms.docx")
-cartridgeTemplatePath = os.path.join(
-    os.getcwd(), "modules\\templates\\cartridge.docx")
-bulletTemplatePath = os.path.join(
-    os.getcwd(), "modules\\templates\\bullet.docx")
 
 DateFormat = "%d.%m.%Y"
 
@@ -212,7 +204,7 @@ class ProcessingSheetProcessor(Sheets):
         self.totalItemsNos = self._firearmItemsNoForCOC() + ', ' + self.ammoItems
         
         # Create instance of DOCX TEMPLATE for PROCESSING SHEET
-        self.processingDocTemplate = DocxTemplate(processingTemplatePath)
+        self.processingDocTemplate = DocxTemplate(UserPaths.processingTemplatePath)
 
 
     def __searchMinMaxNoInString(self, item:str) :
@@ -561,7 +553,7 @@ class FirearmsProcessor(Sheets):
         self.firearms = self.ParcelsDF.getFirearmsOrAmmoDF(
             firearms).sort_values('ParcelNo').values.tolist()
         # Create instance of DOCX TEMPLATE
-        self.firearmsDocTemplate = DocxTemplate(firearmsTemplatePath)
+        self.firearmsDocTemplate = DocxTemplate(UserPaths.firearmsTemplatePath)
 
     def testFiresFromItemNo(self, itemNo: str) -> str:
         itemsToCheck = {
@@ -623,7 +615,7 @@ class CartridgeProcessor(Sheets):
         self.cartridges = self.ParcelsDF.getFirearmsOrAmmoDF(
             cartridge).sort_values('ParcelNo').values.tolist()
         # Create instance of DOCX TEMPLATE
-        self.cartridgeTemplate = DocxTemplate(cartridgeTemplatePath)
+        self.cartridgeTemplate = DocxTemplate(UserPaths.cartridgeTemplatePath)
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
 
@@ -653,7 +645,7 @@ class BulletProcessor(Sheets):
         self.bullets = self.ParcelsDF.getFirearmsOrAmmoDF(
             bullet).sort_values('ParcelNo').values.tolist()
         # Create instance of DOCX TEMPLATE
-        self.bulletDocTemplate = DocxTemplate(bulletTemplatePath)
+        self.bulletDocTemplate = DocxTemplate(UserPaths.bulletTemplatePath)
 
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
 
@@ -805,7 +797,6 @@ if __name__ == "__main__":
     print(p.currentCaseFolderPath)
     print(p._ammoItemsNoForCOC())
     print(p.proceesingSheetMaker())
-    os.system(f"start {p.currentCaseFolderPath}")
     # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
     # f = FirearmsProcessor(123456)
@@ -820,3 +811,5 @@ if __name__ == "__main__":
     # print(len(b.bullets))
 
     # print(UserPaths().checkNcreateCaseWorkDirectory())
+
+    os.system(f"start {p.currentCaseFolderPath}")

@@ -6,6 +6,12 @@ from math import ceil
 class UserPaths():
 
     userHomePath = os.path.expanduser("~")
+    processingTemplatePath = os.path.join(os.getcwd(), "templates\\processing.docx")
+    firearmsTemplatePath = os.path.join(os.getcwd(), "templates\\firearms.docx")
+    cartridgeTemplatePath = os.path.join(os.getcwd(), "templates\\cartridge.docx")
+    bulletTemplatePath = os.path.join(os.getcwd(), "templates\\bullet.docx")
+    reportTemplatePath = './templates/template.docx'
+
 
     def __init__(self) -> None:
         self.CurrentCaseWorkParentFolder = self.checkNcreateCaseWorkDirectory()
