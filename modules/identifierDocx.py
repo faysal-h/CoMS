@@ -71,15 +71,16 @@ class IdentifiersDocument():
         return saveLocation
         logging.info(f"Identififers file saved in {saveLocation}")
 
-    def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, firDate, ps, district):
+    def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, ps, district):
         id = self.document.add_paragraph("", style="Bold16")
         id_format = id.paragraph_format
         id_format.space_after = Pt(0)
-        id.add_run('Case No 1:\t').font.size = Pt(11)
+        id.add_run('Case No(s) :\t').font.size = Pt(11)
         id.add_run(f'{caseNo1}\n').font.size = Pt(12)
-        id.add_run(f'Case No 2:\t{caseNo2}\n').font.size = Pt(11)
+        if caseNo2 not in [None, '']:
+            id.add_run(f'\t\t{caseNo2}\n').font.size = Pt(11)
         id.add_run(f'Parcels:\t{parcels}\n').font.size = Pt(11)
-        id.add_run(f'FIR:\t\t{fir} ({firDate})\n').font.size = Pt(11)
+        id.add_run(f'FIR:\t\t{fir}\n').font.size = Pt(11)
         id.add_run(f'PS: \t\t{ps}\n').font.size = Pt(11)
         id.add_run(f'District:\t{district}\n').font.size = Pt(11)
         id.add_run('').font.size = Pt(11)
@@ -93,6 +94,28 @@ class IdentifiersDocument():
         id.add_run(f'\t{AddressTo},\n').font.size = Pt(13)
         id.add_run(f'\t{district}.\n').font.size = Pt(13)
         id.add_run('').font.size = Pt(11)
+
+class NotesDocument(IdentifiersDocument):
+    def __init__(self) -> None:
+        self.document = Document()
+
+    def addNote(self, caseNo1, caseNo2, parcels):
+        id = self.document.add_paragraph("", style="Bold16")
+        id_format = id.paragraph_format
+        id_format.space_after = Pt(0)
+        id.add_run('_______________________________________________________________________________________________\n').font.size = Pt(11)
+        id.add_run('Case No(s):\t').font.size = Pt(11)
+        id.add_run(f'{caseNo1}\t{caseNo2}\n').font.size = Pt(12)
+        id.add_run(f'Total Parcels:\t{parcels}\n').font.size = Pt(10)
+        # id.add_run('').font.size = Pt(10)
+
+    def addParcelDetailsInNotes(self, parcelNo, itemNo, quantity, caliber, itemDetail):
+        id = self.document.add_paragraph("")
+        id_format = id.paragraph_format
+        id_format.space_after = Pt(0)
+        id.add_run(f'Parcel {parcelNo}: ').font.size = Pt(10)
+        id.add_run(f'{quantity} ({itemNo}) {caliber}').font.size = Pt(10)
+        id.add_run('').font.size = Pt(10)
 
 
 if __name__ == '__main__':

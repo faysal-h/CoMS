@@ -201,11 +201,15 @@ class ParcelsDF(DataFrames):
         return self.parcelsDF.drop(['CaseNoFK', 'SubmissionDate', 'SubmitterName', 'Rank', 'FIR', 'FIRDate'],
                                    axis=1).sort_values('ParcelNo').values.tolist()
 
+    def getParcelsDetailsForNotesSheet(self):
+        return self.parcelsDF.drop(['CaseNoFK', 'SubmissionDate', 'SubmitterName', 'Rank', 'FIRDate', 'PS', 'District', 'Accused', 'Notes'],
+                                   axis=1).sort_values('ParcelNo').values.tolist()
+
     def getParcelDetailsForReport(self):
         parcelsForReport = self.parcelsDF.drop(
             ['CaseNoFK'], axis=1).sort_values('ParcelNo')
-        parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(
-            lambda x: x.date().strftime(customDateFormat)).values.tolist()
+        # parcelsForReport['FIRDate'] = parcelsForReport['FIRDate'].apply(
+        #     lambda x: x.date().strftime(customDateFormat)).values.tolist()
         parcelsForReport['SubmissionDate'] = parcelsForReport['SubmissionDate'].apply(
             lambda x: x.date().strftime(customDateFormat)).values.tolist()
         return parcelsForReport.values.tolist()
@@ -229,8 +233,8 @@ class IdentifiersDF(DataFrames):
             f"{queryToRead} WHERE (((CaseDetails.Batch)=#{self.BatchDate}#))").drop_duplicates(subset=['caseFTM'], keep='first')
 
         # converts FIR date to string format and replaces original column
-        x['FIRDate'] = x['FIRDate'].apply(
-            lambda x: x.date().strftime(customDateFormat)).values.tolist()
+        # x['FIRDate'] = x['FIRDate'].apply(
+        #     lambda x: x.date().strftime(customDateFormat)).values.tolist()
 
         return x
 
@@ -257,7 +261,9 @@ if __name__ == "__main__":
 
     p = ParcelsDF(135180)
 
+    print(p.getAmmoItemNos())
     print(p.getFirearmsItemNos())
+    print(p.getParcelsDetailsForNotesSheet())
 
     # i = IdentifiersDF('01/03')
     # print(i.identifiersDF)

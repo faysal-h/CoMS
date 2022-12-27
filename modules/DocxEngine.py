@@ -10,7 +10,7 @@ from modules.CusPath import UserPaths
 from modules.AccessToDF import CaseDetailsDF, CoCDF, ParcelsDF
 from modules.AccessToDF import IdentifiersDF
 
-from modules.identifierDocx import IdentifiersDocument
+from modules.identifierDocx import IdentifiersDocument, NotesDocument
 from modules.CPRDocx import CPRDocument
 from modules.reportDocx import Report
 
@@ -79,7 +79,7 @@ class IdentifiersProcessor():
 
             # generates identifiers for each case
             i.addFileIdentifiers(caseNo1=caseNoFull, caseNo2=str(caseNo2), parcels=str(identifier[10]),
-                                 fir=str(identifier[6]), firDate=identifier[7], ps=str(identifier[8]),
+                                 fir=str(identifier[6]), ps=str(identifier[8]),
                                  district=str(identifier[9]))
 
         i.saveDoc(os.path.join(self.currentBatchFolderPath,
@@ -109,6 +109,41 @@ class IdentifiersProcessor():
     def getCasesInBatchDate(self):
         return [identifier[3] for identifier in self.Identifiers]
 
+class NotesProcessor(IdentifiersProcessor):
+    def __init__(self, batchDate) -> None:
+        super().__init__(batchDate)
+
+
+    def FileNotesMaker(self):
+        # Uses Identifier Template for Creating Notes Sheet
+        i = NotesDocument()
+        i.PageLayout('A4')
+        i.add_styles()
+        # i.createTwoColumnsPage()
+
+        for identifier in self.Identifiers:
+
+            caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(
+                identifier[2]) + "-FTM-" + self.zeroBeforFtmNumber(identifier[3])
+            caseNo2 = self.noneToEmptyValue(identifier[5])
+
+            
+
+            # Generates Note for each case
+            i.addNote(caseNo1=caseNoFull, caseNo2=str(caseNo2), parcels=str(identifier[10]))
+
+            # FTM no is identifier[3]
+            p = ParcelsDF(int(identifier[3]))
+            parcels = p.getParcelsDetailsForNotesSheet()
+            # Add Parcels to Case
+            for parcel in parcels:
+
+                i.addParcelDetailsInNotes(parcelNo=parcel[0], itemNo=parcel[5], quantity=parcel[6],
+                                         caliber=parcel[2], itemDetail= parcel[4])
+
+
+        i.saveDoc(os.path.join(self.currentBatchFolderPath,
+                f"Notes-{self.fileNameEnder}.docx"))
 
 class CPRProcessor(IdentifiersProcessor):
     def __init__(self, batchDate) -> None:
@@ -124,12 +159,10 @@ class CPRProcessor(IdentifiersProcessor):
 
             # generates identifiers for each case
             cpr.addRowInMainTable(Serial=str(i), CaseNo=caseNoFull, FIR=str(identifier[6]),
-                                  FIRDate=identifier[7], PS=str(identifier[8]),
-                                  District=str(identifier[9]))
+                                  PS=str(identifier[8]), District=str(identifier[9]))
 
         cpr.save(os.path.join(self.currentBatchFolderPath,
                  f"CPR-{self.fileNameEnder}.docx"))
-
 
 class Sheets():
 
@@ -230,7 +263,8 @@ class ProcessingSheetProcessor(Sheets):
     def _ammoItemsNoForCOC(self) -> str:
         itemsList = self.ParcelsDF.getAmmoItemNos()
         logging.info(f'list of items are {itemsList}')
-        
+        # itemLetters = set(re.findall('\D', ''.join(self.itemsList)))
+
         # Ammo list to store items no
         cc = []
         ss = []
@@ -268,6 +302,7 @@ class ProcessingSheetProcessor(Sheets):
 
     def _firearmItemsNoForCOC(self) -> str:
         itemsList = self.ParcelsDF.getFirearmsItemNos()
+        logging.info(f'list of FIREARMS is {itemsList}')
         # Ammo list to store items no
         p = []
         s = []
@@ -292,14 +327,14 @@ class ProcessingSheetProcessor(Sheets):
         s = self.__searchMinMaxNoInString(' '.join(s))
         r = self.__searchMinMaxNoInString(' '.join(r))
         m = self.__searchMinMaxNoInString(' '.join(m))
-
+        logging.info(f'firearms {p}, {s}')
         string = []
 
         self.__cocItemsStringMaker(p, string, 'P')
         self.__cocItemsStringMaker(s, string, 'S')
         self.__cocItemsStringMaker(r, string, 'R')
         self.__cocItemsStringMaker(m, string, 'M')
-
+        logging.info(f'Firearms String is {string}')
         return ', '.join(string)
 
     def findTypeOfCOC(self):
@@ -500,11 +535,15 @@ class ProcessingSheetProcessor(Sheets):
         # # converts digit to text
         # inflectEngine = inflect.engine()
         # Q = inflectEngine.number_to_words(Quantity)
+        if Quantity < 2:
+            itemWord = 'Item'
+        else:
+            itemWord = 'Items'
 
         if(ParcelNo == "and"):
-            return (f"and {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}")
+            return (f"and {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} ({itemWord} {ItemsNo}) {notes}")
         else:
-            return (f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} (Item {ItemsNo}) {notes}")
+            return (f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} ({itemWord} {ItemsNo}) {notes}")
 
     # gets LIST of parcels in case and combine it to a single string.
     def getAndSetParcels(self):
@@ -733,7 +772,7 @@ class ReportProcessor(Sheets):
         else:
             funcTest = ''
 
-        return f"Comparison of {cartridgeCase}{And}{shotShellCase} with submitted {f}{funcTest}"
+        return f"Comparison of {cartridgeCase}{And}{shotShellCase} with Submitted {f}{funcTest}"
 
     def reportGenerator(self):
 
@@ -776,8 +815,8 @@ if __name__ == "__main__":
 
     # r.reportGenerator()
 
-    # cpr = CPRProcessor('28/02/2022')
-    # cpr.FileCPRMaker()
+    n = NotesProcessor('08/03/2022')
+    n.FileNotesMaker()
 
     # i = IdentifiersProcessor("1/3/2022")
     # # i.FileIdentifierMaker()
@@ -793,10 +832,7 @@ if __name__ == "__main__":
     # i.FileIdentifierMaker()
     # i.EnvelopsMaker()
 
-    p = ProcessingSheetProcessor(123456)
-    print(p.currentCaseFolderPath)
-    print(p._ammoItemsNoForCOC())
-    print(p.proceesingSheetMaker())
+
     # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
     # f = FirearmsProcessor(123456)
@@ -812,4 +848,4 @@ if __name__ == "__main__":
 
     # print(UserPaths().checkNcreateCaseWorkDirectory())
 
-    os.system(f"start {p.currentCaseFolderPath}")
+    os.system(f"start {n.currentBatchFolderPath}")

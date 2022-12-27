@@ -125,6 +125,7 @@ class menu():
         DocxEngine.IdentifiersProcessor(batchDate).FileIdentifierMaker()
         DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
         DocxEngine.CPRProcessor(batchDate).FileCPRMaker()
+        DocxEngine.NotesProcessor(batchDate).FileNotesMaker()
 
     def generateSheetsInBatch(self):
         batchDate = self.getBatchDateFromUser()

@@ -97,7 +97,7 @@ class Report():
                                              style='SimpleText')
 
         # FIR & PS CELL
-        newRowCells[2].paragraphs[0].add_run(f'{fir}/{firDate[8:]},'
+        newRowCells[2].paragraphs[0].add_run(f'{fir},'
                                              f' \n{PS}, {District}', style='SimpleText')
 
         # ITEM DETAILS CELL
@@ -232,7 +232,7 @@ class Report():
                 f'\n{caseNo2}', style='SimpleText')
         # firstRowCells[2].paragraphs[0].add_run('Attention To', style='TableHeading')
         firstRowCells[3].paragraphs[0].add_run(
-            f'{addressee}, {district}.', style='SimpleText')
+            f'{addressee}, {district}', style='SimpleText')
 
     def paraEvDetail(self, Addressee, District, items, testRequest):
         # if(items>1):
@@ -252,7 +252,7 @@ class Report():
         EVdescriptionParagraph = self.document.paragraphs[2]
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
-        EVdescriptionParagraph.add_run(f" submitted along with the request of {Addressee}, {District} for ",
+        EVdescriptionParagraph.add_run(f" Submitted along with the request of {Addressee}, {District} for ",
                                        style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.").bold = True
         # evidenceDetailsParagraph2 = self.document.add_paragraph("", style='CompactParagraph')
@@ -273,7 +273,7 @@ class Report():
         for i, parcel in enumerate(parcels, start=0):
 
             # converts quantity of items from digits to words and other variables to statements
-            quantityInWords = inflect.engine().number_to_words(parcel[10])
+            quantityInWords = inflect.engine().number_to_words(parcel[10]).title()
             accused = self.accusedStatementfrmName(parcel[14])
             testFires = self.testFiresStatementFromItemNo(
                 EvType=parcel[7], itemNo=parcel[9])
