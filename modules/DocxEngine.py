@@ -294,7 +294,7 @@ class ProcessingSheetProcessor(Sheets):
         string = []
 
         self.__cocItemsStringMaker(cc, string, 'C')
-        self.__cocItemsStringMaker(ss, string, 'S')
+        self.__cocItemsStringMaker(ss, string, 'SS')
         self.__cocItemsStringMaker(bb, string, 'B')
         self.__cocItemsStringMaker(mm, string, 'M')
         logging.info(f'Ammo Items string list is {string}')
@@ -505,10 +505,10 @@ class ProcessingSheetProcessor(Sheets):
                 'B': self.TeamMember,
                 'C': self.analyst,
                 'D': self.analyst,
-                'E': self.TeamMember,
-                'F': self.TeamMember,
-                'G': self.Balscanner,
-                'H': self.Balscanner,
+                'E': self.Balscanner,
+                'F': self.Balscanner,
+                'G': self.analyst,
+                'H': self.analyst,
                 'I': self.TeamMember,
                 'J': self.TeamMember,
                 'K': "CPR",
@@ -832,6 +832,8 @@ if __name__ == "__main__":
     # i.FileIdentifierMaker()
     # i.EnvelopsMaker()
 
+    p = ProcessingSheetProcessor(104307)
+    print(p._ammoItemsNoForCOC())
 
     # p.proceesingSheetMaker(UserPaths.checkNcreateUserCaseWorkFolder())
 
