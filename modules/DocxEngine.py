@@ -22,6 +22,8 @@ cartridge = ['cartridge case', 'cartridge cases', 'cartridge',
              'shotshell case', 'shotshell cases', 'shotshell']
 bullet = ['bullet', 'metal piece', 'bullets', 'metal pieces']
 
+# List of caliber for which word "caliber" should be omitted.
+SPECIAL_CALIBERS = ['12G', '9mm']
 
 class IdentifiersProcessor():
     def __init__(self, batchDate) -> None:
@@ -109,6 +111,7 @@ class IdentifiersProcessor():
     def getCasesInBatchDate(self):
         return [identifier[3] for identifier in self.Identifiers]
 
+
 class NotesProcessor(IdentifiersProcessor):
     def __init__(self, batchDate) -> None:
         super().__init__(batchDate)
@@ -145,6 +148,7 @@ class NotesProcessor(IdentifiersProcessor):
         i.saveDoc(os.path.join(self.currentBatchFolderPath,
                 f"Notes-{self.fileNameEnder}.docx"))
 
+
 class CPRProcessor(IdentifiersProcessor):
     def __init__(self, batchDate) -> None:
         super().__init__(batchDate)
@@ -163,6 +167,7 @@ class CPRProcessor(IdentifiersProcessor):
 
         cpr.save(os.path.join(self.currentBatchFolderPath,
                  f"CPR-{self.fileNameEnder}.docx"))
+
 
 class Sheets():
 
@@ -219,8 +224,9 @@ class Sheets():
 
         return iE.number_to_words(digit)
 
-# This classs manipulate data from DataFrames and varivale of COC, Case Details, Parcels
+
 class ProcessingSheetProcessor(Sheets):
+    # This classs manipulate data from DataFrames and varivale of COC, Case Details, Parcels
     def __init__(self, ftmNumber) -> None:
         super().__init__(ftmNumber)
 
@@ -337,7 +343,7 @@ class ProcessingSheetProcessor(Sheets):
         logging.info(f'Firearms String is {string}')
         return ', '.join(string)
 
-    def findTypeOfCOC(self):
+    def _findTypeOfCOC(self):
         bs = self.Balscanner
         tm = self.TeamMember
 
@@ -356,7 +362,7 @@ class ProcessingSheetProcessor(Sheets):
 
     def setCoCandEVdetails(self):
         EvDetails = self.getAndSetParcels()
-        x = self.findTypeOfCOC()
+        x = self._findTypeOfCOC()
         if (x == 1):                                                # SINGLE WITHOUT BALSCAN
             return {
                 'AGENCY_CASE': self.fullCaseNumber,
@@ -527,11 +533,17 @@ class ProcessingSheetProcessor(Sheets):
                 'P6': "Case Done",
             }
 
-    # Concatenate Items Details in a single String
-    def parcelDetailsStringMaker(self, ParcelNo, Quantity, EVCaliber, EVDetails, ItemsNo, notes):
-        if(notes == None or notes == "None"):
-            notes = ""
+    def parcelDetailsStringMaker(self, itemDetails:list, sameParcel=False):
+        ParcelNo = itemDetails[0]
+        Quantity = int(itemDetails[5])
+        EVCaliber = itemDetails[1]
+        EVDetails = itemDetails[3]
+        ItemsNo = itemDetails[4]
+        notes = itemDetails[6]
 
+        # Concatenate Items Details in a single String
+        if notes in [None, "None"]:
+            notes = ""
         # # converts digit to text
         # inflectEngine = inflect.engine()
         # Q = inflectEngine.number_to_words(Quantity)
@@ -540,13 +552,18 @@ class ProcessingSheetProcessor(Sheets):
         else:
             itemWord = 'Items'
 
-        if(ParcelNo == "and"):
-            return (f"and {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} ({itemWord} {ItemsNo}) {notes}")
-        else:
-            return (f"Parcel {str(ParcelNo)} : {self.numberToWord(Quantity)} {str(EVCaliber)} caliber {EVDetails} ({itemWord} {ItemsNo}) {notes}")
+        caliberWord = ''
+        if EVCaliber not in SPECIAL_CALIBERS:
+            caliberWord = 'caliber '
 
-    # gets LIST of parcels in case and combine it to a single string.
+        if(sameParcel == True):
+            return (f"and {self.numberToWord(Quantity)} {str(EVCaliber)} {caliberWord}{EVDetails} ({itemWord} {ItemsNo}) {notes}")
+        else:
+            return (f"Parcel {str(ParcelNo)}: {self.numberToWord(Quantity)} {str(EVCaliber)} {caliberWord}{EVDetails} ({itemWord} {ItemsNo}) {notes}")
+
     def getAndSetParcels(self):
+        # gets LIST of parcels in case and combine it to a single string.
+
         parcels = self.ParcelsDF.getParcelsDetailsForProcessingSheet()
 
         caseDetailsList = []
@@ -555,28 +572,22 @@ class ProcessingSheetProcessor(Sheets):
             logging.info(f"index {index}")
             # for parcel add PARCEL 1 to start
             if(index == 0):
-                caseDetailsList.append(self.parcelDetailsStringMaker(
-                    ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1],
-                    EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                caseDetailsList.append(self.parcelDetailsStringMaker(itemDetails=item))
             else:
                 # gets the parcel No of previous parcel
                 oldParcelNo = parcels[index-1][0]
 
                 if(item[0] != oldParcelNo):
-                    caseDetailsList.append(self.parcelDetailsStringMaker(
-                        ParcelNo=item[0], Quantity=item[5], EVCaliber=item[1],
-                        EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                    caseDetailsList.append(self.parcelDetailsStringMaker(itemDetails=item))
                 else:
-                    caseDetailsList.append(self.parcelDetailsStringMaker(
-                        ParcelNo="and", Quantity=item[5], EVCaliber=item[1],
-                        EVDetails=item[3], ItemsNo=item[4], notes=item[6]))
+                    caseDetailsList.append(self.parcelDetailsStringMaker(itemDetails=item, sameParcel=True))
         # this method also joins parcel string and returns a single string of case details for
         # processing sheet
         logging.info(caseDetailsList)
         return ("").join(caseDetailsList)
 
-    # Poplulate and Generate Processing Sheet
     def proceesingSheetMaker(self):
+        # Poplulate and Generate Processing Sheet
         context = self.setCoCandEVdetails()
         self.processingDocTemplate.render(context)
         self.processingDocTemplate.save(os.path.join(self.currentCaseFolderPath,

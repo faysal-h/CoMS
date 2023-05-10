@@ -37,7 +37,7 @@ class menu():
         if(ftmNo is None):
             self.run
         else:
-            if(self.validateCaseNumber(ftmNo)):
+            if(self._validateCaseNumber(ftmNo)):
                 self.generateSheets(ftmNo)
 
     def getBatchDateFromUser(self):
@@ -47,7 +47,7 @@ class menu():
         if(batchDate is None):
             self.run()
         else:
-            parsedDate = self.parse_date(batchDate)
+            parsedDate = self._parse_date(batchDate)
             if(DataFrames(ftmNo="").checkIfBatcDateExist(BatchDate=parsedDate)):
                 return parsedDate
             else:
@@ -76,19 +76,16 @@ class menu():
     def quitCMS(self):
         sys.exit(0)
 
-    def validateCaseNumber(self, ftmNumber: int):
-        if(ftmNumber.isnumeric()):
-            if(len(str(ftmNumber)) in [5, 6]):
-                if(DataFrames(ftmNumber).checkIfCaseExist()):
-                    return True
-                else:
-                    self.numericORlengthWarning()
-            else:
-                self.numericORlengthWarning()
+    def _validateCaseNumber(self, ftmNumber: int):
+        if( 
+            ftmNumber.isnumeric() and 
+            len(str(ftmNumber)) in [5, 6] and 
+            DataFrames(ftmNumber).checkIfCaseExist() ):
+            return True
         else:
             self.numericORlengthWarning()
-
-    def parse_date(self, batchDate):
+ 
+    def _parse_date(self, batchDate):
         """
         Return whether the string can be interpreted as a date.
 
