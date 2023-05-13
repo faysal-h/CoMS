@@ -7,7 +7,7 @@ from docx.shared import Inches, Pt, Mm
 from docx.enum.style import WD_STYLE_TYPE
 
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('CCMS.IdentifierDocx')
 
 
 class IdentifiersDocument():
@@ -65,16 +65,24 @@ class IdentifiersDocument():
         else:
             return 'Page size not supported.'
 
+    def addHeader(self, HeaderText:str):
+        section = self.document.sections[0]
+        header = section.header
+        paragraph = header.paragraphs[0]
+        paragraph.text = str(HeaderText)
+        #header.is_linked_to_previous
+
     def saveDoc(self, saveLocation, IdentifiersORevnelops='Identifiers'):
 
         self.document.save(saveLocation)
+        logger.info(f"Identififers file saved in {saveLocation}")
         return saveLocation
-        logging.info(f"Identififers file saved in {saveLocation}")
 
-    def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, ps, district):
+    def addFileIdentifiers(self, caseNo1, caseNo2, parcels, fir, ps, district, BatchDate=""):
         id = self.document.add_paragraph("", style="Bold16")
         id_format = id.paragraph_format
         id_format.space_after = Pt(0)
+        id.add_run(f'\t\t\t({BatchDate})\n').font.size = Pt(8)
         id.add_run('Case No(s) :\t').font.size = Pt(11)
         id.add_run(f'{caseNo1}\n').font.size = Pt(12)
         if caseNo2 not in [None, '']:

@@ -8,8 +8,24 @@ import pymsgbox
 from modules.AccessToDF import DataFrames
 from modules import DocxEngine
 
+# create logger
+logger = logging.getLogger('CCMS')
+logger.setLevel(logging.DEBUG)
 
-logging.basicConfig(level=logging.DEBUG)
+# # create handlers and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+# # create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                              datefmt='%d-%m-%Y %I:%M:%S %p')
+
+# # add formatter to ch
+ch.setFormatter(formatter)
+
+# # add ch to logger
+logger.addHandler(ch)
+
 
 
 class menu():
@@ -65,6 +81,7 @@ class menu():
                                 )
 
     def run(self):
+
         while(True):
             choice = self.userPrompt()
             action = self.choices.get(choice)
@@ -94,10 +111,10 @@ class menu():
         """
         try:
             batchDate = parse(batchDate, fuzzy=False, dayfirst=True)
-            return batchDate.strftime('%Y-%m-%d')
+            return batchDate
 
         except ValueError as e:
-            logging.info(e)
+            logger.error(e)
             return self.wrongDateWarning()
 
     def generateSheets(self, ftmNumber, openFolder=True):
@@ -116,7 +133,7 @@ class menu():
 
     def generateIdentifiers(self):
         batchDate = self.getBatchDateFromUser()
-        logging.info(f'batch date is {batchDate}')
+        logger.info(f'Batch date is {batchDate}')
         DocxEngine.IdentifiersProcessor(batchDate).FileIdentifierMaker()
         DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
         DocxEngine.CPRProcessor(batchDate).FileCPRMaker()
@@ -134,12 +151,16 @@ class menu():
             except Exception as e:
                 pymsgbox.alert(text=f'Data of Case {case} is not complete in Database',
                                title='Warning')
-                logging.error(e)
+                logger.error(e)
 
         os.system(f"start {folderPath}")
         pymsgbox.alert(
             text=f"Sheets of all cases are generated", title="Success")
 
+def main():
+    logger.info('Starting')
+    menu().run()
+    logger.info('Ending')
 
 if __name__ == "__main__":
-    menu().run()
+    main()

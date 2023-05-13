@@ -14,6 +14,8 @@ from modules.identifierDocx import IdentifiersDocument, NotesDocument
 from modules.CPRDocx import CPRDocument
 from modules.reportDocx import Report
 
+logger = logging.getLogger('CCMS.DocxEngine')
+
 
 DateFormat = "%d.%m.%Y"
 
@@ -46,7 +48,8 @@ class IdentifiersProcessor():
             return str(ftmNumber)
 
     def batchDateToString(self) -> str:
-        return ''.join(ch for ch in str(self.batchDate) if ch.isalnum())
+        batchDateString = self.batchDate.strftime('%d-%m-%Y')
+        return ''.join(ch for ch in batchDateString if ch.isalnum())
 
     def noneToEmptyValue(self, value):
         if(value == None):
@@ -62,7 +65,9 @@ class IdentifiersProcessor():
 
             # Generates Respective case folder
             batchDate = identifier[0].to_pydatetime()
+            # Batch Date Folder
             batchFolder = UserPaths().makeFolderfrmDate(date=batchDate)
+
             UserPaths().makeFolderInPath(batchFolder, caseNo=caseNoFull)
 
         return batchFolder
@@ -73,6 +78,8 @@ class IdentifiersProcessor():
         i.add_styles()
         i.createTwoColumnsPage()
 
+        # i.addHeader(HeaderText=str("Batch Date: " + self.batchDate))
+
         for identifier in self.Identifiers:
 
             caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(
@@ -82,7 +89,7 @@ class IdentifiersProcessor():
             # generates identifiers for each case
             i.addFileIdentifiers(caseNo1=caseNoFull, caseNo2=str(caseNo2), parcels=str(identifier[10]),
                                  fir=str(identifier[6]), ps=str(identifier[8]),
-                                 district=str(identifier[9]))
+                                 district=str(identifier[9]), BatchDate=self.batchDate.strftime('%d-%m-%Y'))
 
         i.saveDoc(os.path.join(self.currentBatchFolderPath,
                   f"Identifiers-{self.fileNameEnder}.docx"))
@@ -94,7 +101,7 @@ class IdentifiersProcessor():
         i.createTwoColumnsPage()
 
         for envelop in self.Identifiers:
-            logging.info(envelop)
+            logger.info(envelop)
 
             caseNoFull = "PFSA" + \
                 str(envelop[1]) + "-" + str(envelop[2]) + \
@@ -249,7 +256,7 @@ class ProcessingSheetProcessor(Sheets):
     def __searchMinMaxNoInString(self, item:str) :
         if item not in ['', None]:
             result = [int(e) for e in re.split("[^0-9]", item) if e != '']
-            logging.info(f'result in min and max is {result}')
+            logger.info(f'result in min and max is {result}')
             return min(result), max(result)
         else:
             return ''
@@ -268,7 +275,7 @@ class ProcessingSheetProcessor(Sheets):
 
     def _ammoItemsNoForCOC(self) -> str:
         itemsList = self.ParcelsDF.getAmmoItemNos()
-        logging.info(f'list of items are {itemsList}')
+        logger.info(f'list of items are {itemsList}')
         # itemLetters = set(re.findall('\D', ''.join(self.itemsList)))
 
         # Ammo list to store items no
@@ -303,12 +310,12 @@ class ProcessingSheetProcessor(Sheets):
         self.__cocItemsStringMaker(ss, string, 'SS')
         self.__cocItemsStringMaker(bb, string, 'B')
         self.__cocItemsStringMaker(mm, string, 'M')
-        logging.info(f'Ammo Items string list is {string}')
+        logger.info(f'Ammo Items string list is {string}')
         return ', '.join(string) + ', Test Fires'
 
     def _firearmItemsNoForCOC(self) -> str:
         itemsList = self.ParcelsDF.getFirearmsItemNos()
-        logging.info(f'list of FIREARMS is {itemsList}')
+        logger.info(f'list of FIREARMS is {itemsList}')
         # Ammo list to store items no
         p = []
         s = []
@@ -333,14 +340,14 @@ class ProcessingSheetProcessor(Sheets):
         s = self.__searchMinMaxNoInString(' '.join(s))
         r = self.__searchMinMaxNoInString(' '.join(r))
         m = self.__searchMinMaxNoInString(' '.join(m))
-        logging.info(f'firearms {p}, {s}')
+        logger.info(f'firearms {p}, {s}')
         string = []
 
         self.__cocItemsStringMaker(p, string, 'P')
         self.__cocItemsStringMaker(s, string, 'S')
         self.__cocItemsStringMaker(r, string, 'R')
         self.__cocItemsStringMaker(m, string, 'M')
-        logging.info(f'Firearms String is {string}')
+        logger.info(f'Firearms String is {string}')
         return ', '.join(string)
 
     def _findTypeOfCOC(self):
@@ -348,16 +355,16 @@ class ProcessingSheetProcessor(Sheets):
         tm = self.TeamMember
 
         if(tm == None and bs == None):
-            logging.info("single without balscan")
+            logger.info("single without balscan")
             return 1
         elif(tm == None and bs != None):
-            logging.info('Single with balscan')
+            logger.info('Single with balscan')
             return 2
         elif(bs == None):
-            logging.info('team without balscan')
+            logger.info('team without balscan')
             return 3
         else:
-            logging.info('team with balscan')
+            logger.info('team with balscan')
             return 4
 
     def setCoCandEVdetails(self):
@@ -569,7 +576,7 @@ class ProcessingSheetProcessor(Sheets):
         caseDetailsList = []
 
         for index, item in enumerate(parcels):
-            logging.info(f"index {index}")
+            logger.info(f"index {index}")
             # for parcel add PARCEL 1 to start
             if(index == 0):
                 caseDetailsList.append(self.parcelDetailsStringMaker(itemDetails=item))
@@ -583,7 +590,7 @@ class ProcessingSheetProcessor(Sheets):
                     caseDetailsList.append(self.parcelDetailsStringMaker(itemDetails=item, sameParcel=True))
         # this method also joins parcel string and returns a single string of case details for
         # processing sheet
-        logging.info(caseDetailsList)
+        logger.info(caseDetailsList)
         return ("").join(caseDetailsList)
 
     def proceesingSheetMaker(self):
@@ -606,25 +613,16 @@ class FirearmsProcessor(Sheets):
         self.firearmsDocTemplate = DocxTemplate(UserPaths.firearmsTemplatePath)
 
     def testFiresFromItemNo(self, itemNo: str) -> str:
-        itemsToCheck = {
-            'R': f'{itemNo}TC1 & {itemNo}TC2',
-            'P': f'{itemNo}TC1 & {itemNo}TC2',
-            'S': f'{itemNo}TS1 & {itemNo}TS2',
-            'M': f'{itemNo}TC1 & {itemNo}TC2',
-        }
-        logging.info(f"Item No is {itemNo}")
 
-        if itemNo == None or "":
+        testFireLetter = 'C'
+        if itemNo.upper().startswith('S'):
+            testFireLetter = 'S'
+
+        if itemNo in [None, "", " "]:
             return ""
         else:
             itemNo = itemNo.upper()
-            # loops through dictionary to find respective item test fires names
-            for key in itemsToCheck:
-                if(itemNo.find(key) != -1):
-                    logging.info(
-                        f"Test fires from firearm {itemsToCheck[key]}")
-                    return itemsToCheck[key]
-
+            return f'{itemNo}T{testFireLetter}1 & {itemNo}T{testFireLetter}2'
     # Iterate through each firearm in firarsm List and save a worksheet with corresponding item No
 
     def firearmSheetMaker(self):

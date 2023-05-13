@@ -9,7 +9,7 @@ from sqlalchemy import table
 
 from modules.CusPath import UserPaths
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 '''

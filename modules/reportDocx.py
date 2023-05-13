@@ -12,8 +12,7 @@ from docx.enum.text import WD_LINE_SPACING
 from modules.CusPath import UserPaths
 
 
-logging.basicConfig(level=logging.DEBUG)
-
+logger = logging.getLogger('CCMS.ReportDocx')
 
 '''
 NOTE There should be a template docx in the folder with the following custom sytles
@@ -30,27 +29,15 @@ class Report():
         self.document = Document(UserPaths.reportTemplatePath)
 
     def testFiresStatementFromItemNo(self, EvType: str, itemNo: str):
-        itemsToCheck = {
-            'R': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-            'P': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-            'S': f': test fires produced in the lab {itemNo}TS1 & {itemNo}TS2',
-            'M': f': test fires produced in the lab {itemNo}TC1 & {itemNo}TC2',
-        }
-        logging.info(f"Evidence Type is {EvType}, Item No is {itemNo}")
 
-        if itemNo == None or "":
-            return ""
+        testFireLetter = 'C'
+        if itemNo.upper().startswith('S'):
+            testFireLetter = 'S'
+
+        if itemNo not in [None, ""] and (EvType == "firearm"):
+            return f': test fires produced in the lab {itemNo}T{testFireLetter}1 & {itemNo}T{testFireLetter}2'
         else:
-            itemNo = itemNo.upper()
-            if(EvType == "firearm"):
-                # loops through dictionary to find respective item test fires names
-                for key in itemsToCheck:
-                    if(itemNo.find(key) != -1):
-                        logging.info(
-                            f"this test fire is found {itemsToCheck[key]}")
-                        return itemsToCheck[key]
-            else:
-                return ""
+            return ""
 
     def header(self, caseNo):
         section0 = self.document.sections[0]

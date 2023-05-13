@@ -3,6 +3,7 @@ import logging
 import urllib
 from datetime import datetime
 from dateutil.parser import parse
+from dataclasses import dataclass
 
 from sqlalchemy import create_engine
 import sqlalchemy_access as sa_a
@@ -10,7 +11,7 @@ import sqlalchemy_access.pyodbc as sa_a_pyodbc
 
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('CCMS.AccessToDF')
 
 DB_PATH = os.path.join(os.getcwd(), "CCMSdatabase.accdb")
 
@@ -69,10 +70,10 @@ class AccessFile():
             connection_uri = f"access+pyodbc:///?odbc_connect={urllib.parse.quote_plus(connection_string)}"
             self.engine = create_engine(connection_uri)
 
-            logging.info('Connection to Database Established.')
+            logger.info('Connection to Database Established.')
 
         except ValueError as e:
-            logging.error(
+            logger.error(
                 f"connection to database is not established.\n Error is : {e}")
 
     # def closeConnection(self):
@@ -81,11 +82,11 @@ class AccessFile():
     def readQuery(self, Query):
         df = pd.read_sql_query(Query, self.engine)
         if(df.empty):
-            logging.error(
+            logger.error(
                 "Reading Query Failure. No data found against this case number.")
             return df
         else:
-            logging.info(
+            logger.info(
                 "Reading Query Success. Data found against this case number.")
             return df
 
@@ -219,13 +220,13 @@ class IdentifiersDF(DataFrames):
 
     def __init__(self, BatchDate, ftmNo="") -> None:
         super().__init__(ftmNo)
-        self.BatchDate = BatchDate
-        if (self.BatchDate) != parse(BatchDate, fuzzy=False, dayfirst=True):
-            self.identifiersDF = self.getTableByBatchDate(
+        self.BatchDate = BatchDate.strftime('%d-%m-%Y')
+        # if (self.BatchDate) != parse(BatchDate, fuzzy=False, dayfirst=True):
+        self.identifiersDF = self.getTableByBatchDate(
                 queryCaseDetailsForIdentifiersDate)
-        else:
-            self.identifiersDF = self.getTableByFtmNo(
-                queryCaseDetailsForIdentifiersFtm)
+        # else:
+        #     self.identifiersDF = self.getTableByFtmNo(
+        #         queryCaseDetailsForIdentifiersFtm)
 
     def getTableByBatchDate(self, queryToRead: str) -> pd.DataFrame:
         # extracts a dataframe contain values for creating identifiers.
@@ -253,18 +254,51 @@ class IdentifiersDF(DataFrames):
         return self.caseDetailsDF.iloc[indexNumber][columnName]
 
 
+@dataclass
+class CaseDetails:
+    year: int
+    pfsa: int
+    ftm: int
+    additionalCaseNo: str
+    batch: datetime.date
+    noOfParcels: int
+    analyst: str
+    reviewer: str
+    balscanner: str
+    teamMember: str
+
+@dataclass
+class ParcelDetails:
+    parcelNo:int
+    submitter: str
+    rank: str
+    fir: str
+    ps: str
+    distt: str
+
+@dataclass
+class Items:
+    caliber: str
+    details: str
+    itemNo: str
+    quantity: str
+    notes: str
+    accused: str
+    
+
 if __name__ == "__main__":
 
     # d = CaseDetailsDF(123456)
     # print(type(d.getBatchDate()))
     # print(d.getValuefrmCaseDetails('TeamMember'))
 
-    p = ParcelsDF(135180)
+    p = ParcelsDF(123456)
 
-    print(p.getAmmoItemNos())
-    print(p.getFirearmsItemNos())
-    print(p.getParcelsDetailsForNotesSheet())
+    # c1 = CaseDetails(year=p.caseDetailsDF[''])
 
+    x = p.getParcelsDetailsForProcessingSheet() 
+    for i in x: print(i)
+    
     # i = IdentifiersDF('01/03')
     # print(i.identifiersDF)
     # x = i.identifiersDF.drop(labels=['Batch'], axis=1)
