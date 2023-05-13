@@ -9,6 +9,7 @@ Following list of modules are necessary to build the executable
 3. sqlalchemy_access
 4. pandas
 5. docxtpl
+6. pymsgbox
 
 ## Documentation
 User must enter details of a case in ACCESS database file CCMSDatabas. After entering the details run CCMS from the main folder. following options are available
