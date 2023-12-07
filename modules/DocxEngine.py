@@ -641,7 +641,7 @@ class FirearmsProcessor(Sheets):
                     'DATE': self.processingDate,
                     'CALIBER': firearm[1],
                     'FTMNO': self.caseNumberParts[2],
-                    'MARKING': str(firearm[4])+"/"+self.zeroBeforFtmNumber(self.caseNumberParts[2])+"/"+yearShort[2:],
+                    'MARKING': str(firearm[4])+"/"+self.zeroBeforFtmNumber(self.caseNumberParts[2])+"/"+yearShort[-2:],
                     'ABIS': self.BalscanDate,
                     'TESTFIRES': testFires,
                     'NOTES': firearm[6]

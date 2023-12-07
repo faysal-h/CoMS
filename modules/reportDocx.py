@@ -239,7 +239,7 @@ class Report():
         EVdescriptionParagraph = self.document.paragraphs[2]
         EVdescriptionParagraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
-        EVdescriptionParagraph.add_run(f" Submitted along with the request of {Addressee}, {District} for ",
+        EVdescriptionParagraph.add_run(f" submitted along with the request of {Addressee}, {District} for ",
                                        style='SimpleText')
         EVdescriptionParagraph.add_run(f"{testRequest}.").bold = True
         # evidenceDetailsParagraph2 = self.document.add_paragraph("", style='CompactParagraph')
