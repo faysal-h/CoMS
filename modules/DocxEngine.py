@@ -22,7 +22,7 @@ DateFormat = "%d.%m.%Y"
 firearms = ['rifle', 'pistol', 'shotgun', 'machine pistol']
 cartridge = ['cartridge case', 'cartridge cases', 'cartridge',
              'shotshell case', 'shotshell cases', 'shotshell']
-bullet = ['bullet', 'metal piece', 'bullets', 'metal pieces']
+bullet = ['bullet', 'metal piece', 'bullets', 'metal pieces', 'metallic piece', 'metallic pieces']
 
 # List of caliber for which word "caliber" should be omitted.
 SPECIAL_CALIBERS = ['12G', '9mm']
@@ -776,7 +776,7 @@ class ReportProcessor(Sheets):
 
         funcTest = ''
         # Adds functionlity in Test request if firearm is present
-        if firearm > 1:
+        if firearm > 0:
             funcTest = ' and Functionality Testing'
         else:
             funcTest = ''
