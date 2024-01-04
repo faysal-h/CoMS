@@ -220,10 +220,12 @@ class IdentifiersDF(DataFrames):
 
     def __init__(self, BatchDate, ftmNo="") -> None:
         super().__init__(ftmNo)
-        self.BatchDate = BatchDate.strftime('%d-%m-%Y')
+        self.BatchDate = BatchDate.strftime('%m-%d-%Y')
+
         # if (self.BatchDate) != parse(BatchDate, fuzzy=False, dayfirst=True):
         self.identifiersDF = self.getTableByBatchDate(
                 queryCaseDetailsForIdentifiersDate)
+
         # else:
         #     self.identifiersDF = self.getTableByFtmNo(
         #         queryCaseDetailsForIdentifiersFtm)
