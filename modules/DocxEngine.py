@@ -77,10 +77,10 @@ class IdentifiersProcessor():
         i.PageLayout('A4')
         i.add_styles()
         i.createTwoColumnsPage()
-
         # i.addHeader(HeaderText=str("Batch Date: " + self.batchDate))
 
         for identifier in self.Identifiers:
+            print(f"IDENTIFIER IS f{identifier}")
 
             caseNoFull = "PFSA" + str(identifier[1]) + "-" + str(
                 identifier[2]) + "-FTM-" + self.zeroBeforFtmNumber(identifier[3])
@@ -113,7 +113,8 @@ class IdentifiersProcessor():
 
         i.saveDoc(os.path.join(self.currentBatchFolderPath,
                   f"Envelops-{self.fileNameEnder}.docx"))
-        os.system(f"start {self.currentBatchFolderPath}")
+        # os.system(f"start {self.currentBatchFolderPath}")
+        return self.currentBatchFolderPath
 
     def getCasesInBatchDate(self):
         return [identifier[3] for identifier in self.Identifiers]
@@ -243,11 +244,14 @@ class ProcessingSheetProcessor(Sheets):
             "TeamMember")
 
         self.noOfParcels = self.ParcelsDF.getNoOfParcels()
+        # Testfires Item Numbers
+        self.testFiresItems = self._testFiresItemsNoForCOC()
         # Ammunition details in COC
-        self.ammoItems = self._ammoItemsNoForCOC()
-        
+        self.ammoItems = self._ammoItemsNoForCOC() + ', ' + self.testFiresItems
+        # Firearms item numbers
+        self.firearmItems = self._firearmItemsNoForCOC()
         # Total items in last cell of COC
-        self.totalItemsNos = self._firearmItemsNoForCOC() + ', ' + self.ammoItems
+        self.totalItemsNos = self.firearmItems + ', ' + self.ammoItems
         
         # Create instance of DOCX TEMPLATE for PROCESSING SHEET
         self.processingDocTemplate = DocxTemplate(UserPaths.processingTemplatePath)
@@ -311,7 +315,7 @@ class ProcessingSheetProcessor(Sheets):
         self.__cocItemsStringMaker(bb, string, 'B')
         self.__cocItemsStringMaker(mm, string, 'M')
         logger.info(f'Ammo Items string list is {string}')
-        return ', '.join(string) + ', Test Fires'
+        return ', '.join(string)
 
     def _firearmItemsNoForCOC(self) -> str:
         itemsList = self.ParcelsDF.getFirearmsItemNos()
@@ -340,7 +344,8 @@ class ProcessingSheetProcessor(Sheets):
         s = self.__searchMinMaxNoInString(' '.join(s))
         r = self.__searchMinMaxNoInString(' '.join(r))
         m = self.__searchMinMaxNoInString(' '.join(m))
-        logger.info(f'firearms {p}, {s}')
+        logger.info(f'firearms {p}, {s}, {r}, {m}')
+
         string = []
 
         self.__cocItemsStringMaker(p, string, 'P')
@@ -348,7 +353,22 @@ class ProcessingSheetProcessor(Sheets):
         self.__cocItemsStringMaker(r, string, 'R')
         self.__cocItemsStringMaker(m, string, 'M')
         logger.info(f'Firearms String is {string}')
+        self.listOfFirearms = string
         return ', '.join(string)
+
+    def _testFiresItemsNoForCOC(self) -> str:
+        testFires = []
+        firearms = self.ParcelsDF.getFirearmsItemNos()
+        print(f"FIRARMS ARE {firearms}")
+        for firearm in firearms:
+            if "S" in firearm:
+                testFires.append(f"{firearm}TS1,{firearm}TS2")
+            else:
+                testFires.append(f"{firearm}TC1,{firearm}TC2")
+        
+        logger.info(f'TEST FIRES ARE {testFires}')
+
+        return ', '.join(testFires)
 
     def _findTypeOfCOC(self):
         bs = self.Balscanner

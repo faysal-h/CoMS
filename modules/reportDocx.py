@@ -87,8 +87,11 @@ class Report():
         newRowCells[2].paragraphs[0].add_run(f'{fir},'
                                              f' \n{PS}, {District}', style='SimpleText')
 
+        caliberWord = " caliber"
+        if caliber in ['9mm', '12G']:
+            caliberWord = ""
         # ITEM DETAILS CELL
-        newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {caliber} caliber {EVDetails} '
+        newRowCells[3].paragraphs[0].add_run(f'{quantityInWords} {caliber}{caliberWord} {EVDetails} '
                                              f'({itemString} {itemNumbers}{testFires}){accused}', style='SimpleText')
 
     # NOTE THIS FUNCTION CREATE AND STORE CUSTOM STYLE
@@ -228,7 +231,7 @@ class Report():
         #     wasORwere = "item was"
 
         if(testRequest == None or testRequest == ''):
-            testRequest = "Comparison of Cartridge Cases and Shotshell Cases with Submitted Firearms and Functionality Testing"
+            testRequest = "Comparison of Cartridge Cases and Shotshell Cases with submitted Firearms and Functionality Testing"
 
         # NOTE EVIDENCE SUBMISSION PARAGRAPH
         # evidenceDetailsParagraph = self.document.add_paragraph("", style='CompactParagraph')

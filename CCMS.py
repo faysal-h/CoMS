@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import subprocess
 from dateutil.parser import parse
 
 import pymsgbox
@@ -37,6 +38,10 @@ class menu():
             'Quit': self.quitCMS
         }
 
+    def openFolder(self, path):
+        if path:
+            subprocess.run(["explorer", path])
+
     def numericORlengthWarning(self):
         pymsgbox.alert(text="Enter a VALID 5 or 6 digits FTM number only.",
                             title="What are you doing?", button="Ok. I'm sorry")
@@ -71,7 +76,7 @@ class menu():
 
     def userPrompt(self):
         # return pymsgbox.prompt(text="Enter FTM Number for sheets.\nEnter BATCH DATE for Identifiers", title='CMS')
-        return pymsgbox.confirm(text="What do you want to do?", title='CMS',
+        return pymsgbox.confirm(text="What do you want to do?", title='CCMS 1.0',
                                 buttons=[
                                     'Generate Sheets',
                                     'Batch Sheet Generator',
@@ -126,8 +131,7 @@ class menu():
         DocxEngine.BulletProcessor(ftmNumber=ftmNumber).bulletSheetMaker()
         folderPath = DocxEngine.ReportProcessor(
             ftmNumber=ftmNumber).reportGenerator()
-        if (openFolder is True):
-            os.system(f"start {folderPath}")
+        self.openFolder(path=folderPath)
         # pymsgbox.alert(text=f"All sheets are generated", title="Success")
         return folderPath
 
@@ -135,9 +139,11 @@ class menu():
         batchDate = self.getBatchDateFromUser()
         logger.info(f'Batch date is {batchDate}')
         DocxEngine.IdentifiersProcessor(batchDate).FileIdentifierMaker()
-        DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
+        folderPath = DocxEngine.IdentifiersProcessor(batchDate).EnvelopsMaker()
+
         DocxEngine.CPRProcessor(batchDate).FileCPRMaker()
         DocxEngine.NotesProcessor(batchDate).FileNotesMaker()
+        self.openFolder(folderPath)
 
     def generateSheetsInBatch(self):
         batchDate = self.getBatchDateFromUser()
@@ -153,7 +159,7 @@ class menu():
                                title='Warning')
                 logger.error(e)
 
-        os.system(f"start {folderPath}")
+        self.openFolder(path=folderPath)
         pymsgbox.alert(
             text=f"Sheets of all cases are generated", title="Success")
 
