@@ -13,7 +13,7 @@ import pandas as pd
 
 logger = logging.getLogger('CCMS.AccessToDF')
 
-DB_PATH = os.path.join(os.getcwd(), "CCMSdatabase.accdb")
+DB_PATH = os.path.join(os.getcwd(), "CoMSdatabase.accdb")
 
 ammo = ['bullet', 'metal piece', 'cartridge case']
 
