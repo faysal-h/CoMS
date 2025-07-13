@@ -1,5 +1,5 @@
 
-# CCMS
+# CoMS
 A project to remove removing redundant data entry and automate comparison case worksheets and report generator.
 
 ## Dependencies
@@ -12,7 +12,7 @@ Following list of modules are necessary to build the executable
 6. pymsgbox
 
 ## Documentation
-User must enter details of a case in ACCESS database file CCMSDatabas. After entering the details run CCMS from the main folder. following options are available
+User must enter details of a case in ACCESS database file CoMSDatabas. After entering the details run CoMS from the main folder. following options are available
 1. Generate sheets
 This option generates sheets and reports of a single case.
 2. Generate Batch sheets
